@@ -10,7 +10,7 @@ object Options {
     @Parameter(names = ["-h", "--help"], help = true)
     var help: Boolean = false
 
-    @Parameter(names = ["-e"], description = "call thrift [methodName]")
+    @Parameter(names = ["-e"], description = "call thrift available methods [executeByteCode, getContractMethods, getContractVariables, compileSourceCode]")
     var method: String? = "executeByteCode"
 
     @Parameter(names = ["-t"], description = "amount threads")
