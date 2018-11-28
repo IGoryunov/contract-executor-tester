@@ -66,9 +66,7 @@ class ContractExecutorClient(private val contractsFolder: String, selectContract
     private fun <R> TSocket.call(body: (ContractExecutor.Client) -> R): R {
         use {
             open()
-            val result = body(ContractExecutor.Client(TBinaryProtocol(this)))
-            close()
-            return result
+            return body(ContractExecutor.Client(TBinaryProtocol(this)))
         }
     }
 }
