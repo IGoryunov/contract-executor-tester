@@ -9,6 +9,8 @@ public abstract class SmartContract implements Serializable {
 
     protected double total = 0;
 
+    protected transient String initiator;
+
     final protected BigDecimal getBalance(String address, String currency) {
         return null;
     }
@@ -29,6 +31,6 @@ public abstract class SmartContract implements Serializable {
         return null;
     }
 
-    final protected void sendTransaction(String source, String target, double amount, String currency) {
+    final protected void sendTransaction(String source, String target, double amount, String currency, double fee) {
     }
 }
