@@ -27,7 +27,7 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()) {
         val address = contractFolder.name
-        val sourcecode = contractFolder.walkTopDown().filterIndexed { index, _ -> index == 1 }.firstOrNull()?.readText()
+        val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
         val bytecode = sourcecode?.let { compile(sourcecode, "Contract") }
         var state: ByteArray? = null
         File(contractsFolderPath + separator + address + separator + "state.bin").let {
