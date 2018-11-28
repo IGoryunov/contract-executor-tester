@@ -35,14 +35,14 @@ fun main(args: Array<String>) {
         return
     }
 
-    val executorClient = ContractExecutorClient(Options.contractIndex)
+    val executorClient = ContractExecutorClient(Options.contractsFolder, Options.contractIndex)
     Options.method?.let { method ->
         when (method) {
             "getContractMethods" -> executorClient.getContractMethods()
             "getContractVariables" -> executorClient.getContractVariables()
             "executeByteCode" -> async(Options.threads, 30, method) { executorClient.executeMethod(Options.arguments) }
             "executeByteCodeMultiple" -> println("this method not supported yet :(")
-            "compileBytecode" -> println("this method not supported yet :(")
+            "compileSourceCode" -> executorClient.compileSourceCode()
             else -> print("unknown method")
         }
     }

@@ -2,13 +2,14 @@ import com.credits.leveldb.client.data.SmartContractData
 import com.credits.thrift.generated.ContractExecutor
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.transport.TSocket
+import java.io.File.separator
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.wrap
 
-class ContractExecutorClient(selectContractIndex:Int = 0) {
+class ContractExecutorClient(private val contractsFolder: String, selectContractIndex: Int = 0) {
 
     private val transport = TSocket("localhost", 9080)
-    private val selectedContractData = loadContractsFromDisk(Options.contractsFolder)[selectContractIndex]
+    private val selectedContractData = loadContractsFromDisk(contractsFolder)[selectContractIndex]
 
     fun executeMethod(args: List<String>) {
         val methodName = args[0]
@@ -18,7 +19,7 @@ class ContractExecutorClient(selectContractIndex:Int = 0) {
             println("smart contract method execute result: ${result.getRet_val()}")
             result.getContractState()?.let { state ->
                 selectedContractData.contractState = state
-                saveContractStateOnDisk(selectedContractData, Options.contractsFolder)
+                saveContractStateOnDisk(selectedContractData, contractsFolder)
             }
         }
     }
@@ -33,6 +34,13 @@ class ContractExecutorClient(selectContractIndex:Int = 0) {
         if (selectedContractData.contractState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
         getContractVariables(wrap(selectedContractData.byteCode), wrap(selectedContractData.contractState))?.getContractVariables()?.forEach {
             println(it)
+        }
+    }
+
+    fun compileSourceCode() = transport.call { client ->
+        client.compileBytecode(selectedContractData.sourceCode).let { response ->
+            println(response.getStatus())
+            writeToFile("$contractsFolder$separator${selectedContractData.address}${separator}bytecode.bin", response.getBytecode())
         }
     }
 
