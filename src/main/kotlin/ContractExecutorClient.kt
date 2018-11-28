@@ -5,33 +5,33 @@ import org.apache.thrift.transport.TSocket
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.wrap
 
-class ContractExecutorClient {
+class ContractExecutorClient(selectContractIndex:Int = 0) {
 
     private val transport = TSocket("localhost", 9080)
-    private val smartContractData = loadContractsFromDisk(Options.contractsFolder)[0]
+    private val selectedContractData = loadContractsFromDisk(Options.contractsFolder)[selectContractIndex]
 
     fun executeMethod(args: List<String>) {
         val methodName = args[0]
         val params = if (args.size > 1) args.subList(1, args.size) else listOf()
 
-        executeMethod(smartContractData, methodName, params)?.let { result ->
+        executeMethod(selectedContractData, methodName, params)?.let { result ->
             println("smart contract method execute result: ${result.getRet_val()}")
             result.getContractState()?.let { state ->
-                smartContractData.contractState = state
-                saveContractStateOnDisk(smartContractData, Options.contractsFolder)
+                selectedContractData.contractState = state
+                saveContractStateOnDisk(selectedContractData, Options.contractsFolder)
             }
         }
     }
 
     fun getContractMethods() {
-        getContractMethods(wrap(smartContractData.byteCode))?.getMethods()?.forEach {
+        getContractMethods(wrap(selectedContractData.byteCode))?.getMethods()?.forEach {
             println(it)
         }
     }
 
     fun getContractVariables() {
-        if (smartContractData.contractState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
-        getContractVariables(wrap(smartContractData.byteCode), wrap(smartContractData.contractState))?.getContractVariables()?.forEach {
+        if (selectedContractData.contractState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
+        getContractVariables(wrap(selectedContractData.byteCode), wrap(selectedContractData.contractState))?.getContractVariables()?.forEach {
             println(it)
         }
     }

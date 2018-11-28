@@ -7,7 +7,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
-fun <T: Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run: () -> Unit) {
+fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run: () -> Unit) {
     val countDownLatch = CountDownLatch(amountThreads)
     val threads = Array(amountThreads) {
         thread {
@@ -25,13 +25,13 @@ fun <T: Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run:
 
 fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
-    File(contractsFolderPath).walkTopDown().filterIndexed { index, _ -> index == 1 }.forEach { folder ->
-        val address = folder.name
-        val sourcecode = folder.walkTopDown().filterIndexed { index, _ -> index == 1 }.firstOrNull()?.readText()
+    for (contractFolder in File(contractsFolderPath).listFiles()) {
+        val address = contractFolder.name
+        val sourcecode = contractFolder.walkTopDown().filterIndexed { index, _ -> index == 1 }.firstOrNull()?.readText()
         val bytecode = sourcecode?.let { compile(sourcecode, "Contract") }
-        var state :ByteArray? = null
-        File(contractsFolderPath+ separator + address + separator + "state.bin").let {
-            if(it.exists()) state = readFromFile(it.absolutePath)
+        var state: ByteArray? = null
+        File(contractsFolderPath + separator + address + separator + "state.bin").let {
+            if (it.exists()) state = readFromFile(it.absolutePath)
         }
         contracts.add(SmartContractData(address, sourcecode, bytecode, state, encrypt(bytecode)))
     }

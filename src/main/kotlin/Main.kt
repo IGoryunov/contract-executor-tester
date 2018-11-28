@@ -22,6 +22,9 @@ object Options {
     @Parameter(names = ["-p"], description = "contracts folder path")
     var contractsFolder: String = currentDirectory + separator + "contracts" + separator
 
+    @Parameter(names = ["-i"], description = "index of current contract into \"contracts\" folder")
+    var contractIndex: Int = 0
+
 }
 
 fun main(args: Array<String>) {
@@ -32,7 +35,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    val executorClient = ContractExecutorClient()
+    val executorClient = ContractExecutorClient(Options.contractIndex)
     Options.method?.let { method ->
         when (method) {
             "getContractMethods" -> executorClient.getContractMethods()
