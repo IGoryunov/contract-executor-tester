@@ -33,7 +33,8 @@ public class SimpleInMemoryCompilator {
 
             Iterable<? extends JavaFileObject> compilationUnits = stdFileManager.getJavaFileObjectsFromFiles(Collections.singletonList(source));
 
-            JavaCompiler.CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
+            JavaCompiler.CompilationTask task = compiler.getTask(null, null, diagnostics,
+                Collections.singletonList("-parameters"), null, compilationUnits);
             Boolean isCompiled = task.call();
 
             if (!isCompiled) {
