@@ -1,6 +1,7 @@
 
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
+import service.ContractExecutorService
 import java.io.File.separator
 import java.nio.file.Paths
 
@@ -35,9 +36,9 @@ fun main(args: Array<String>) {
         return
     }
 
-    val executorClient = ContractExecutorClient(Options.contractsFolder, Options.contractIndex)
+    val executorService = ContractExecutorService(Options.contractsFolder, Options.contractIndex)
     Options.method?.let { method ->
-        with(executorClient) {
+        with(executorService) {
             when (method) {
                 "getContractMethods" -> getContractMethods()
                 "getContractVariables" -> getContractVariables()
