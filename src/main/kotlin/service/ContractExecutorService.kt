@@ -4,6 +4,7 @@ import loadContractsFromDisk
 import saveContractStateOnDisk
 import java.io.File.separator
 import java.nio.ByteBuffer.wrap
+import java.util.stream.Collectors
 
 class ContractExecutorService(private val contractsFolder: String, selectContractIndex: Int = 0) {
     private val selectedContractData = loadContractsFromDisk(contractsFolder)[selectContractIndex]
@@ -22,9 +23,22 @@ class ContractExecutorService(private val contractsFolder: String, selectContrac
         }
     }
 
+    fun executeMultipleMethod(args: List<String>) {
+        val methodName = args[0]
+        val params: List<List<String>> = if (args.size > 1) {
+            val tableArgs = args.subList(1, args.size)
+            val rowArgs = mutableListOf<List<String>>()
+            tableArgs.forEach { row -> rowArgs.add(row.split(";").toList()) }
+            rowArgs
+
+        } else listOf()
+
+        println("smart contract method execute result: ${client.executeMultiple(selectedContractData, methodName, params).getResults()}")
+    }
+
     fun getContractMethods() {
-        client.getContractMethods(wrap(selectedContractData.byteCode)).getMethods()?.forEach {
-            println(it)
+        client.getContractMethods(wrap(selectedContractData.byteCode)).getMethods()?.forEach { method ->
+            println("${method.returnType} ${method.name}(${method.arguments.stream().map { arg -> "${arg.getType()} ${arg.getName()}" }.collect(Collectors.joining(", "))})")
         }
     }
 
