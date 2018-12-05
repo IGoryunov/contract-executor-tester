@@ -3,6 +3,7 @@ import compiler.SimpleInMemoryCompilator.compile
 import utils.Utils.encrypt
 import java.io.File
 import java.io.File.separator
+import java.io.FileNotFoundException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -25,7 +26,7 @@ fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run
 
 fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
-    for (contractFolder in File(contractsFolderPath).listFiles()) {
+    for (contractFolder in File(contractsFolderPath).listFiles() ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
         val address = contractFolder.name
         val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
         val bytecode = sourcecode?.let { compile(sourcecode, "Contract") }
