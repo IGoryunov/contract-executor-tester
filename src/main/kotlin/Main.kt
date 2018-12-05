@@ -1,4 +1,3 @@
-
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import service.ContractExecutorService
@@ -17,7 +16,7 @@ object Options {
     @Parameter(names = ["-t"], description = "amount threads")
     var threads: Int = 1
 
-    @Parameter(names =["-a"], description = "list of arguments [arg0, arg1, arg2...]")
+    @Parameter(names = ["-a"], description = "argument of method")
     var arguments: MutableList<String> = mutableListOf("")
 
     @Parameter(names = ["-p"], description = "contracts folder path")
@@ -36,9 +35,8 @@ fun main(args: Array<String>) {
         return
     }
 
-    val executorService = ContractExecutorService(Options.contractsFolder, Options.contractIndex)
     Options.apply {
-        with(executorService) {
+        with(ContractExecutorService(contractsFolder, contractIndex)) {
             when (method) {
                 "getContractMethods" -> getContractMethods()
                 "getContractVariables" -> getContractVariables()
