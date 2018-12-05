@@ -4,7 +4,6 @@ import com.credits.leveldb.client.data.SmartContractData
 import com.credits.thrift.generated.*
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.transport.TSocket
-import writeToFile
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.wrap
 
@@ -39,12 +38,8 @@ class ContractExecutorThriftClient(host: String, port: Int) {
                 executionTime)
     }
 
-    fun compileSourceCode(sourceCode: String, saveFolderPath: String): ByteArray = transport.call { client ->
-        with(client.compileBytecode(sourceCode)) {
-            println(getStatus())
-            writeToFile(saveFolderPath, getBytecode())
-            getBytecode()
-        }
+    fun compileSourceCode(sourceCode: String): CompileByteCodeResult = transport.call { client ->
+        client.compileBytecode(sourceCode)
     }
 
     private fun <R> TSocket.call(body: (ContractExecutor.Client) -> R): R {

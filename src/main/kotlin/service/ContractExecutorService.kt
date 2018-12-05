@@ -2,6 +2,7 @@ package service
 
 import loadContractsFromDisk
 import saveContractStateOnDisk
+import writeToFile
 import java.io.File.separator
 import java.nio.ByteBuffer.wrap
 import java.util.stream.Collectors
@@ -49,7 +50,10 @@ class ContractExecutorService(private val contractsFolder: String, selectContrac
         }
     }
 
-    fun compileSourceCode() {
-        client.compileSourceCode(selectedContractData.sourceCode, "$contractsFolder$separator${selectedContractData.address}${separator}bytecode.bin")
+    fun compileSourceCode(): ByteArray = with(client.compileSourceCode(selectedContractData.sourceCode)) {
+        writeToFile("$contractsFolder$separator${selectedContractData.address}${separator}bytecode.bin", getBytecode())
+        getBytecode()
     }
+
+
 }
