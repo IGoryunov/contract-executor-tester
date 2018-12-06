@@ -1,8 +1,8 @@
-
-import com.credits.leveldb.client.data.SmartContractData
-import compiler.CompilationException
-import compiler.SimpleInMemoryCompilator
-import utils.Utils
+import com.credits.general.pojo.SmartContractData
+import com.credits.general.pojo.SmartContractDeployData
+import com.credits.general.util.Converter.decodeFromBASE58
+import com.credits.general.util.Converter.encodeToBASE58
+import compiler.SimpleInMemoryCompilator.compile
 import java.io.File
 import java.io.File.separator
 import java.io.FileNotFoundException
@@ -30,37 +30,31 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
             ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
-        val address = contractFolder.name
+        val address = decodeFromBASE58(contractFolder.name)
         val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
-        val bytecode = sourcecode?.let {
-            try {
-                SimpleInMemoryCompilator.compile(sourcecode, "Contract")
-            } catch (e: CompilationException){
-                println("Can't compile contract $address. Reason:${e.localizedMessage}")
-                return@let null
-            }
-        }
+        val bytecode = sourcecode?.let { compile(sourcecode, "Contract") }
         var state: ByteArray? = null
-        File(contractsFolderPath + File.separator + address + File.separator + "state.bin").let {
+        File(contractsFolderPath + separator + address + separator + "state.bin").let {
             if (it.exists()) state = readFromFile(it.absolutePath)
         }
-        contracts.add(SmartContractData(address, sourcecode, bytecode, state, Utils.encrypt(bytecode ?: byteArrayOf())))
+        contracts.add(SmartContractData(address, byteArrayOf(), SmartContractDeployData(sourcecode, bytecode, 0), state))
     }
     return contracts
 }
 
-fun saveContractStateOnDisk(smartContractData: SmartContractData, contractsFolderPath: String) {
-    writeToFile(contractsFolderPath + separator + smartContractData.address + separator + "state.bin", smartContractData.contractState)
-}
+fun saveContractStateOnDisk(smartContractData: SmartContractData, contractsFolderPath: String) =
+        with(smartContractData) {
+            writeToFile("$contractsFolderPath$separator${encodeToBASE58(address)}${separator}state.bin", objectState)
+        }
 
-fun writeToFile(fileName: String, bytes: ByteArray) {
-    File(fileName).outputStream().use { file ->
-        file.write(bytes)
-    }
-}
+fun writeToFile(fileName: String, bytes: ByteArray) =
+        File(fileName).outputStream().use { file ->
+            file.write(bytes)
+        }
 
-fun readFromFile(fileName: String): ByteArray {
-    File(fileName).inputStream().use { file ->
-        return file.readBytes()
-    }
-}
+
+fun readFromFile(fileName: String): ByteArray =
+        File(fileName).inputStream().use { file ->
+            return file.readBytes()
+        }
+

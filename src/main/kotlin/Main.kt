@@ -43,11 +43,11 @@ fun main(args: Array<String>) {
         if (isShowContractSourceCode) println(selectedContractData.sourceCode)
         with(ContractExecutorService(contractsFolder, selectedContractData)) {
             when (method) {
-                "getContractMethods" -> getContractMethods()
-                "getContractVariables" -> getContractVariables()
                 "executeByteCode" -> async(threads, 30, this) { executeMethod(arguments) }
-                "executeByteCodeMultiple" -> executeMultipleMethod(arguments)
-                "compileSourceCode" -> compileSourceCode()
+                "compileSourceCode",
+                "getContractMethods",
+                "getContractVariables",
+                "executeByteCodeMultiple" -> println("method not support yet")
                 else -> print("unknown method")
             }
         }
