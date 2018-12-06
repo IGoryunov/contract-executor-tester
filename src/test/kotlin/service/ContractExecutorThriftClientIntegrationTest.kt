@@ -118,4 +118,27 @@ internal class ContractExecutorThriftClientIntegrationTest : Assert() {
             }
         }
     }
+
+    @Test
+    fun `executeMultiple with incorrect argument`(){
+        val args: MutableList<List<String>> = Stream.generate{ listOf("1") }.limit(5).collect(Collectors.toList())
+        args.add(listOf("asd"))
+        args.add(listOf())
+        args.add(listOf("2"))
+
+        with(smartContracts[1]) {
+            executorClient.executeMultiple(SmartContractData("5B3YXqDTcWQFGAqEJQJP3Bg1ZK8FFtHtgCiFLT5VAxpd", sourceCode, byteCode, contractState, hashState), "addAndGet", args)
+        }.apply {
+            println(this.results.stream().map { it -> it.toString() }.collect(Collectors.joining("\n")))
+
+            assertEquals(8, getResults().size)
+
+            assertEquals(2, results.filter { result -> result.getStatus().getCode() == 1.toByte() }.count())
+
+            with(getStatus()) {
+                assertEquals(0.toByte(), code)
+                assertEquals("success", message)
+            }
+        }
+    }
 }
