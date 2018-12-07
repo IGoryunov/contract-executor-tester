@@ -8,7 +8,6 @@ import java.nio.ByteBuffer.wrap
 import java.util.stream.Collectors
 
 class ContractExecutorService(private val contractsFolder: String, private val contractData: SmartContractData) {
-//    private val contractData = loadContractsFromDisk(contractsFolder)[selectContractIndex]
     private val client = ContractExecutorThriftClient("localhost", 9080)
 
     fun executeMethod(args: List<String>) {
