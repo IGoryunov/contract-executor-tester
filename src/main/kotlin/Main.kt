@@ -11,7 +11,7 @@ object Options {
     var help: Boolean = false
 
     @Parameter(names = ["-e"], description = "call thrift available methods [executeByteCode, executeByteCodeMultiple getContractMethods, getContractVariables, compileSourceCode]")
-    var method: String? = "executeByteCode"
+    var method: String? = ""
 
     @Parameter(names = ["-t"], description = "amount threads")
     var threads: Int = 1
@@ -25,6 +25,9 @@ object Options {
     @Parameter(names = ["-i"], description = "index of current contract into \"contracts\" folder")
     var contractIndex: Int = 0
 
+    @Parameter(names = ["-s"], description = "show selected contract sourcecode")
+    var isShowContractSourceCode: Boolean = false
+
 }
 
 fun main(args: Array<String>) {
@@ -36,7 +39,9 @@ fun main(args: Array<String>) {
     }
 
     Options.apply {
-        with(ContractExecutorService(contractsFolder, contractIndex)) {
+        val selectedContractData = loadContractsFromDisk(contractsFolder)[contractIndex]
+        if (isShowContractSourceCode) println(selectedContractData.sourceCode)
+        with(ContractExecutorService(contractsFolder, selectedContractData)) {
             when (method) {
                 "getContractMethods" -> getContractMethods()
                 "getContractVariables" -> getContractVariables()
