@@ -2,6 +2,7 @@ import com.credits.general.pojo.SmartContractData
 import com.credits.general.pojo.SmartContractDeployData
 import com.credits.general.util.Converter.decodeFromBASE58
 import com.credits.general.util.Converter.encodeToBASE58
+import compiler.CompilationException
 import compiler.SimpleInMemoryCompilator.compile
 import java.io.File
 import java.io.File.separator
@@ -32,7 +33,14 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
             ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
         val address = decodeFromBASE58(contractFolder.name)
         val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
-        val bytecode = sourcecode?.let { compile(sourcecode, "Contract") }
+        val bytecode = sourcecode?.let {
+            try {
+                compile(sourcecode, "Contract")
+            } catch (e: CompilationException) {
+                println("warning: can't compile contract ${contractFolder.name}")
+                return@let null
+            }
+        }
         var state: ByteArray? = null
         File(contractsFolderPath + separator + address + separator + "state.bin").let {
             if (it.exists()) state = readFromFile(it.absolutePath)

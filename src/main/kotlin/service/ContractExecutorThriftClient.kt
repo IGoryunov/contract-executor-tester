@@ -4,7 +4,7 @@ import com.credits.client.executor.thrift.generated.ContractExecutor
 import com.credits.client.executor.thrift.generated.ExecuteByteCodeResult
 import com.credits.client.executor.thrift.generated.GetContractMethodsResult
 import com.credits.general.pojo.SmartContractData
-import com.credits.general.util.Converter.objectToVariant
+import com.credits.general.thrift.generated.Variant
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.transport.TSocket
 import java.nio.ByteBuffer
@@ -17,34 +17,21 @@ class ContractExecutorThriftClient(host: String, port: Int) {
         client.getContractMethods(bytecode)
     }
 
-//    fun getContractVariables(bytecode: ByteBuffer, contractState: ByteBuffer): GetContractVariablesResult = transport.call { client ->
-//        client.getContractVariables(bytecode, contractState)
-//    }
+    fun checkConnection() = transport.use {
+        transport.open()
+        transport.isOpen
+    }
 
-    fun executeMethod(smartContractData: SmartContractData, methodName: String, params: List<String> = mutableListOf(), executionTime: Long = 5000): ExecuteByteCodeResult = transport.call { client ->
+    fun executeMethod(smartContractData: SmartContractData, methodName: String, params: List<Variant> = mutableListOf(), executionTime: Long = 5000): ExecuteByteCodeResult = transport.call { client ->
         with(smartContractData) {
             client.executeByteCode(
                     wrap(address),
                     wrap(smartContractDeployData.byteCode),
                     if (objectState != null) wrap(objectState) else wrap(byteArrayOf()),
                     methodName,
-                    params.map { it -> objectToVariant(it) }.toCollection(mutableListOf()))
+                    params)
         }
     }
-
-//    fun executeMultiple(smartContractData: SmartContractData, methodName: String, params: List<List<String>>, executionTime: Long = 5000): ExecuteByteCodeMultipleResult = transport.call { client ->
-//        client.executeByteCodeMultiple(
-//                wrap(byteArrayOf(0x1)),
-//                wrap(smartContractData.byteCode),
-//                if (smartContractData.contractState != null) wrap(smartContractData.contractState) else wrap(byteArrayOf()),
-//                methodName,
-//                params,
-//                executionTime)
-//    }
-
-//    fun compileSourceCode(sourceCode: String): CompileByteCodeResult = transport.call { client ->
-//        client.compileBytecode(sourceCode)
-//    }
 
     private fun <R> TSocket.call(body: (ContractExecutor.Client) -> R): R {
         use {
@@ -53,3 +40,4 @@ class ContractExecutorThriftClient(host: String, port: Int) {
         }
     }
 }
+

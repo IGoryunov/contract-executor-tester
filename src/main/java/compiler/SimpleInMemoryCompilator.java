@@ -40,7 +40,6 @@ public class SimpleInMemoryCompilator {
             if (!isCompiled) {
                 StringBuilder errorMessage = new StringBuilder();
                 for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-                    System.out.printf("Error on line %d in %s. Message: %s", diagnostic.getLineNumber(), diagnostic.getSource(), diagnostic.getMessage(null));
                     errorMessage.append(String.format("Error on line %d. Message: %s\n", diagnostic.getLineNumber(),
                         diagnostic.getMessage(null)));
                 }

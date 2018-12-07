@@ -1,29 +1,33 @@
-import com.credits.leveldb.client.data.SmartContractData
+
+import com.credits.general.pojo.SmartContractData
+import com.credits.general.pojo.SmartContractDeployData
+import com.credits.general.util.Converter.decodeFromBASE58
 import compiler.CompilationException
-import compiler.SimpleInMemoryCompilator
-import utils.Utils
+import compiler.SimpleInMemoryCompilator.compile
 import java.io.File
+import java.io.File.separator
 import java.io.FileNotFoundException
+
 
 fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
             ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
-        val address = contractFolder.name
+        val address = decodeFromBASE58(contractFolder.name)
         val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
         val bytecode = sourcecode?.let {
             try {
-                SimpleInMemoryCompilator.compile(sourcecode, "Contract")
-            } catch (e: CompilationException){
-                println("Can't compile contract $address. Reason:${e.localizedMessage}")
+                compile(sourcecode, "Contract")
+            } catch (e: CompilationException) {
+                println("warning: can't compile contract ${contractFolder.name}")
                 return@let null
             }
         }
         var state: ByteArray? = null
-        File(contractsFolderPath + File.separator + address + File.separator + "state.bin").let {
+        File(contractsFolderPath + separator + contractFolder.name + separator + "state.bin").let {
             if (it.exists()) state = readFromFile(it.absolutePath)
         }
-        contracts.add(SmartContractData(address, sourcecode, bytecode, state, Utils.encrypt(bytecode ?: byteArrayOf())))
+        contracts.add(SmartContractData(address, byteArrayOf(), SmartContractDeployData(sourcecode, bytecode, 0), state))
     }
     return contracts
 }

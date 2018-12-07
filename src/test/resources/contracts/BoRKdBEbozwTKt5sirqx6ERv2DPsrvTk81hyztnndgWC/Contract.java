@@ -6,7 +6,7 @@ public class Contract extends SmartContract {
 	
 	public int digit = 1234;
     
-	public Contract() {
+    public Contract() {
         System.out.println("Constructor");
     }
 
@@ -15,13 +15,13 @@ public class Contract extends SmartContract {
 
     public void balanceGet() throws Exception {
         System.out.println("getBalance()");
-        java.math.BigDecimal balance = getBalance("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2", "CS");
+        java.math.BigDecimal balance = getBalance("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2");
         System.out.println("getBalance=" + balance);
     }
 
     public void sendZeroCS() throws Exception {
         System.out.println("try to send 0 credits...");
-        sendTransaction("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2", "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2", 0, "CS", 0);
+        sendTransaction("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2", 0, 0, new byte[0]);
         System.out.println("success");
     }
 
