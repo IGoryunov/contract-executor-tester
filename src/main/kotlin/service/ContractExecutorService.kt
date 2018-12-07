@@ -16,7 +16,7 @@ class ContractExecutorService(private val contractsFolder: String, selectContrac
         val params = if (args.size > 1) args.subList(1, args.size) else listOf()
 
         client.executeMethod(selectedContractData, methodName, params).let { result ->
-            println("smart contract method execute result: ${result.getRet_val()}")
+            println("smart contract method execute result: $result")
             result.getContractState()?.let { state ->
                 selectedContractData.contractState = state
                 saveContractStateOnDisk(selectedContractData, contractsFolder)
