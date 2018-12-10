@@ -1,4 +1,3 @@
-
 import com.credits.general.pojo.SmartContractData
 import com.credits.general.pojo.SmartContractDeployData
 import com.credits.general.util.Converter.decodeFromBASE58
@@ -12,9 +11,11 @@ import java.io.FileNotFoundException
 fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
-            ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
+        ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
         val address = decodeFromBASE58(contractFolder.name)
-        val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
+        val sourcecode =
+            contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()
+                ?.readText()
         val bytecode = sourcecode?.let {
             try {
                 compile(sourcecode, "Contract")
@@ -27,7 +28,14 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
         File(contractsFolderPath + separator + contractFolder.name + separator + "state.bin").let {
             if (it.exists()) state = readFromFile(it.absolutePath)
         }
-        contracts.add(SmartContractData(address, byteArrayOf(), SmartContractDeployData(sourcecode, bytecode, 0), state))
+        contracts.add(
+            SmartContractData(
+                address,
+                byteArrayOf(),
+                SmartContractDeployData(sourcecode, bytecode, 0),
+                state
+            )
+        )
     }
     return contracts
 }

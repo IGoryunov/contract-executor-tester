@@ -22,14 +22,20 @@ class ContractExecutorThriftClient(host: String, port: Int) {
         transport.isOpen
     }
 
-    fun executeMethod(smartContractData: SmartContractData, methodName: String, params: List<Variant> = mutableListOf(), executionTime: Long = 5000): ExecuteByteCodeResult = transport.call { client ->
+    fun executeMethod(
+        smartContractData: SmartContractData,
+        methodName: String,
+        params: List<Variant> = mutableListOf(),
+        executionTime: Long = 5000
+    ): ExecuteByteCodeResult = transport.call { client ->
         with(smartContractData) {
             client.executeByteCode(
-                    wrap(address),
-                    wrap(smartContractDeployData.byteCode),
-                    if (objectState != null) wrap(objectState) else wrap(byteArrayOf()),
-                    methodName,
-                    params)
+                wrap(address),
+                wrap(smartContractDeployData.byteCode),
+                if (objectState != null) wrap(objectState) else wrap(byteArrayOf()),
+                methodName,
+                params
+            )
         }
     }
 

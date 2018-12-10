@@ -30,9 +30,11 @@ fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run
 fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
-            ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
+        ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
         val address = decodeFromBASE58(contractFolder.name)
-        val sourcecode = contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()?.readText()
+        val sourcecode =
+            contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()
+                ?.readText()
         val bytecode = sourcecode?.let {
             try {
                 compile(sourcecode, "Contract")
@@ -45,24 +47,31 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
         File(contractsFolderPath + separator + address + separator + "state.bin").let {
             if (it.exists()) state = readFromFile(it.absolutePath)
         }
-        contracts.add(SmartContractData(address, byteArrayOf(), SmartContractDeployData(sourcecode, bytecode, 0), state))
+        contracts.add(
+            SmartContractData(
+                address,
+                byteArrayOf(),
+                SmartContractDeployData(sourcecode, bytecode, 0),
+                state
+            )
+        )
     }
     return contracts
 }
 
 fun saveContractStateOnDisk(smartContractData: SmartContractData, contractsFolderPath: String) =
-        with(smartContractData) {
-            writeToFile("$contractsFolderPath$separator${encodeToBASE58(address)}${separator}state.bin", objectState)
-        }
+    with(smartContractData) {
+        writeToFile("$contractsFolderPath$separator${encodeToBASE58(address)}${separator}state.bin", objectState)
+    }
 
 fun writeToFile(fileName: String, bytes: ByteArray) =
-        File(fileName).outputStream().use { file ->
-            file.write(bytes)
-        }
+    File(fileName).outputStream().use { file ->
+        file.write(bytes)
+    }
 
 
 fun readFromFile(fileName: String): ByteArray =
-        File(fileName).inputStream().use { file ->
-            return file.readBytes()
-        }
+    File(fileName).inputStream().use { file ->
+        return file.readBytes()
+    }
 
