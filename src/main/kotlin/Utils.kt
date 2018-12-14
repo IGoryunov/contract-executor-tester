@@ -1,7 +1,8 @@
-import com.credits.general.pojo.SmartContractData
-import com.credits.general.pojo.SmartContractDeployData
-import com.credits.general.util.Converter.decodeFromBASE58
-import com.credits.general.util.Converter.encodeToBASE58
+import com.credits.client.node.pojo.SmartContractData
+import com.credits.client.node.pojo.SmartContractDeployData
+import com.credits.client.node.thrift.generated.TokenStandart.CreditsExtended
+import com.credits.general.util.GeneralConverter.decodeFromBASE58
+import com.credits.general.util.GeneralConverter.encodeToBASE58
 import compiler.CompilationException
 import compiler.SimpleInMemoryCompilator.compile
 import java.io.File
@@ -51,7 +52,7 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
             SmartContractData(
                 address,
                 byteArrayOf(),
-                SmartContractDeployData(sourcecode, bytecode, 0),
+                SmartContractDeployData(sourcecode, bytecode, CreditsExtended),
                 state
             )
         )

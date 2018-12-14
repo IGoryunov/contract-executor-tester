@@ -3,7 +3,7 @@ package service
 import com.credits.client.executor.thrift.generated.ContractExecutor
 import com.credits.client.executor.thrift.generated.ExecuteByteCodeResult
 import com.credits.client.executor.thrift.generated.GetContractMethodsResult
-import com.credits.general.pojo.SmartContractData
+import com.credits.client.node.pojo.SmartContractData
 import com.credits.general.thrift.generated.Variant
 import org.apache.thrift.protocol.TBinaryProtocol
 import org.apache.thrift.transport.TSocket
@@ -34,7 +34,8 @@ class ContractExecutorThriftClient(host: String, port: Int) {
                 wrap(smartContractDeployData.byteCode),
                 if (objectState != null) wrap(objectState) else wrap(byteArrayOf()),
                 methodName,
-                params
+                params,
+                500
             )
         }
     }
