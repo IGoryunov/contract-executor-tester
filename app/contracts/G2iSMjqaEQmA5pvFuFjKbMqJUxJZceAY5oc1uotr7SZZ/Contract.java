@@ -6,17 +6,16 @@ public class Contract extends SmartContract {
 	
 	public int digit = 1234;
     
-    public Contract() {
+	public Contract() {
         System.out.println("Constructor");
     }
 
     public void initialize() {
     }
-
     public void balanceGet() throws Exception {
         System.out.println("getBalance()");
-        java.math.BigDecimal balance = getBalance("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2");
-        System.out.println("getBalance=" + balance);
+//        java.math.BigDecimal balance = getBalance("1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2");
+//        System.out.println("getBalance=" + balance);
     }
 
     public void sendZeroCS() throws Exception {
@@ -29,8 +28,8 @@ public class Contract extends SmartContract {
         getClass().getConstructor().newInstance();
     }
 
-    public void openSocket(int port) throws Exception {
-        new ServerSocket();
+    public void openSocket() throws Exception {
+        new ServerSocket(5555);
         System.out.println();
     }
 	

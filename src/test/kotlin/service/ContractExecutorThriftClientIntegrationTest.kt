@@ -22,7 +22,7 @@ internal class ContractExecutorThriftClientIntegrationTest : Assert() {
         var errorMessage = "unknown error"
         assumeTrue({
             try {
-                executorClient.checkConnection()
+                executorClient.getContractMethods(smartContracts[0].smartContractDeployData.byteCode)
             } catch (e: TTransportException) {
                 errorMessage = e.localizedMessage
                 return@assumeTrue false

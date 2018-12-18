@@ -10,7 +10,10 @@ object Options {
     @Parameter(names = ["-h", "--help"], help = true)
     var help: Boolean = false
 
-    @Parameter(names = ["-e"], description = "call thrift available methods [executeByteCode, executeByteCodeMultiple getContractMethods, getContractVariables, compileSourceCode]")
+    @Parameter(
+        names = ["-e"],
+        description = "call thrift available methods [executeByteCode, executeByteCodeMultiple getContractMethods, getContractVariables, compileSourceCode]"
+    )
     var method: String? = ""
 
     @Parameter(names = ["-t"], description = "amount threads")
@@ -40,13 +43,13 @@ fun main(args: Array<String>) {
 
     Options.apply {
         val selectedContractData = loadContractsFromDisk(contractsFolder)[contractIndex]
-        if (isShowContractSourceCode) println(selectedContractData.sourceCode)
+        if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
         with(ContractExecutorService(contractsFolder, selectedContractData)) {
             when (method) {
                 "executeByteCode" -> async(threads, 30, this) { executeMethod(arguments) }
-                "compileSourceCode",
-                "getContractMethods",
-                "getContractVariables",
+                "compileSourceCode" -> compileSourceCode()
+                "getContractMethods" -> getContractMethods()
+                "getContractVariables" -> getContractVariables()
                 "executeByteCodeMultiple" -> println("method not support yet")
                 else -> print("unknown method")
             }
