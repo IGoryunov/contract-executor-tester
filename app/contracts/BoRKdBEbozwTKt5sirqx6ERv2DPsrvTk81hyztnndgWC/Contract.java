@@ -1,5 +1,3 @@
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Field;
 import java.net.ServerSocket;
 
 public class Contract extends SmartContract {

@@ -34,7 +34,14 @@ internal class ContractExecutorThriftClientIntegrationTest : Assert() {
     @Test
     fun executeBytecodeTest() {
         with(smartContracts[1]) {
-            executorClient.executeMethod(this, "addAndGet", listOf(Variant.v_i32(100)))
+            executorClient.executeByteCode(
+                address,
+                smartContractDeployData.byteCode,
+                objectState,
+                "addAndGet",
+                listOf(Variant.v_i32(100)),
+                500
+            )
         }.apply {
             println(this)
 

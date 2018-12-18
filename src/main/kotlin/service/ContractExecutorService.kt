@@ -26,7 +26,14 @@ class ContractExecutorService(
             objectToVariant(createVariantObject(types[i], values[i]))
         }.toList()
         with(selectedContractData) {
-            client.executeByteCode(address, smartContractDeployData.byteCode, objectState, methodName, params, 500)
+            client.executeByteCode(
+                address,
+                smartContractDeployData.byteCode,
+                if (objectState != null) objectState else byteArrayOf(),
+                methodName,
+                params,
+                500
+            )
                 .let { result ->
                     println("smart contract method execute result: $result")
                     result.getContractState()?.let { state ->
