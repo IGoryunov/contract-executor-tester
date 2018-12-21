@@ -28,7 +28,7 @@ fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run
 }
 
 
-fun loadContractsFromDisk(contractsFolderPath: String, showCompileErrors: Boolean = false): List<SmartContractData> {
+fun loadContractsFromDisk(contractsFolderPath: String, debugInfo: Boolean = false): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
         ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
@@ -41,7 +41,7 @@ fun loadContractsFromDisk(contractsFolderPath: String, showCompileErrors: Boolea
                 compile(sourcecode, "Contract")
             } catch (e: CompilationException) {
                 println("warning: can't compile contract ${contractFolder.name}")
-                if(showCompileErrors) println(e.message)
+                if(debugInfo) println(e.message)
                 return@let null
             }
         }
@@ -49,7 +49,7 @@ fun loadContractsFromDisk(contractsFolderPath: String, showCompileErrors: Boolea
         File(contractFolder.absolutePath + separator + "state.bin").let {
             if (it.exists()){
                 state = readFromFile(it.absolutePath)
-                println("state for contract ${contractFolder.name} loaded with hash - ${state?.hashCode()}")
+                if(debugInfo) println("state for contract ${contractFolder.name} loaded with hash - ${state?.hashCode()}")
             }
         }
         contracts.add(
