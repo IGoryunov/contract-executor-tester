@@ -5,6 +5,8 @@
 *.ipr
 
 ### Compiled output ###
+*.bin
+*.jar
 target
 /credits
 /build
