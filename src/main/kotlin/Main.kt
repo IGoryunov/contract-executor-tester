@@ -48,13 +48,15 @@ fun main(args: Array<String>) {
         val selectedContractData = loadContractsFromDisk(contractsFolder, isDebugInfoEnabled)[contractIndex]
         if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
         with(ContractExecutorService(contractsFolder, selectedContractData)) {
-            when (method) {
-                "executeByteCode" -> async(threads, 30, this) { executeMethod(arguments) }
-                "compileSourceCode" -> compileSourceCode()
-                "getContractMethods" -> getContractMethods()
-                "getContractVariables" -> getContractVariables()
-                "executeByteCodeMultiple" -> println("method not support yet")
-                else -> print("unknown method")
+            async(threads, 30, this) {
+                when (method) {
+                    "executeByteCode" -> executeMethod(arguments)
+                    "compileSourceCode" -> compileSourceCode()
+                    "getContractMethods" -> getContractMethods()
+                    "getContractVariables" -> getContractVariables()
+                    "executeByteCodeMultiple" -> println("method not support yet")
+                    else -> print("unknown method")
+                }
             }
         }
     }
