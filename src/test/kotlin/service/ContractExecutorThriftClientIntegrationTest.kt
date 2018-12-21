@@ -1,5 +1,6 @@
 package service
 
+import com.credits.client.executor.service.ContractExecutorThriftApiClient
 import com.credits.general.thrift.generated.Variant
 import loadContractsFromDisk
 import org.apache.thrift.transport.TTransportException
@@ -12,12 +13,12 @@ import org.junit.jupiter.api.Test
 internal class ContractExecutorThriftClientIntegrationTest : Assert() {
 
     private val smartContracts = loadContractsFromDisk("src/test/resources/contracts")
-    private lateinit var executorClient: ContractExecutorThriftClient
+    private lateinit var executorClient: ContractExecutorThriftApiClient
 
 
     @BeforeEach
     fun setUp() {
-        executorClient = ContractExecutorThriftClient("localhost", 9080)
+        executorClient = ContractExecutorThriftApiClient.getInstance("localhost", 9080)
 
         var errorMessage = "unknown error"
         assumeTrue({

@@ -1,5 +1,6 @@
 package service
 
+import com.credits.client.executor.service.ContractExecutorThriftApiClient
 import com.credits.client.node.pojo.SmartContractData
 import com.credits.general.util.GeneralConverter.encodeToBASE58
 import com.credits.general.util.VariantConverter.createVariantObject
@@ -15,7 +16,7 @@ class ContractExecutorService(
     private val contractsFolder: String,
     private val selectedContractData: SmartContractData
 ) {
-    private val client = ContractExecutorThriftClient("localhost", 9080)
+    private val client = ContractExecutorThriftApiClient.getInstance("localhost", 9080)
 
     fun executeMethod(args: List<String>) {
         val methodName = args[0]
