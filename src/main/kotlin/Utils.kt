@@ -46,8 +46,11 @@ fun loadContractsFromDisk(contractsFolderPath: String, showCompileErrors: Boolea
             }
         }
         var state: ByteArray? = null
-        File(contractsFolderPath + separator + address + separator + "state.bin").let {
-            if (it.exists()) state = readFromFile(it.absolutePath)
+        File(contractFolder.absolutePath + separator + "state.bin").let {
+            if (it.exists()){
+                state = readFromFile(it.absolutePath)
+                println("state for contract ${contractFolder.name} loaded with hash - ${state?.hashCode()}")
+            }
         }
         contracts.add(
             SmartContractData(
