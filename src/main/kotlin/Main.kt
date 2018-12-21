@@ -31,6 +31,9 @@ object Options {
     @Parameter(names = ["-s"], description = "show selected contract sourcecode")
     var isShowContractSourceCode: Boolean = false
 
+    @Parameter(names = ["-ce"], description = "show compilationErrors")
+    var isShowCompilationErrors: Boolean = false
+
 }
 
 fun main(args: Array<String>) {
@@ -42,7 +45,7 @@ fun main(args: Array<String>) {
     }
 
     Options.apply {
-        val selectedContractData = loadContractsFromDisk(contractsFolder)[contractIndex]
+        val selectedContractData = loadContractsFromDisk(contractsFolder, isShowCompilationErrors)[contractIndex]
         if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
         with(ContractExecutorService(contractsFolder, selectedContractData)) {
             when (method) {

@@ -28,7 +28,7 @@ fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run
 }
 
 
-fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> {
+fun loadContractsFromDisk(contractsFolderPath: String, showCompileErrors: Boolean = false): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
         ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
@@ -41,6 +41,7 @@ fun loadContractsFromDisk(contractsFolderPath: String): List<SmartContractData> 
                 compile(sourcecode, "Contract")
             } catch (e: CompilationException) {
                 println("warning: can't compile contract ${contractFolder.name}")
+                if(showCompileErrors) println(e.message)
                 return@let null
             }
         }
