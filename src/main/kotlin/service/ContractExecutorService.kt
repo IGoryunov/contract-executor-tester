@@ -14,6 +14,7 @@ import saveContractStateOnDisk
 import writeToFile
 import java.io.File.separator
 import java.nio.ByteBuffer
+import java.util.stream.Collectors
 import java.util.stream.IntStream
 import kotlin.streams.toList
 
@@ -91,14 +92,16 @@ class ContractExecutorService(
     }
 
     fun getContractMethods() {
-//        byteCodeObjectsDataToByteCodeObjects(client.getContractMethods(selectedContractData.smartContractDeployData.byteCodeObjects)).getMethods()
-//                ?.forEach { method ->
-//                    println(
-//                            "${method.returnType} ${method.name}(${method.arguments.stream().map { arg -> "${arg.getType()} ${arg.getName()}" }.collect(
-//                                    Collectors.joining(", ")
-//                            )})"
-//                    )
-//                }
+        thriftPool.useClient { client ->
+            client.getContractMethods(byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects))
+                    .getMethods()
+                    ?.forEach { method ->
+                        println(
+                                "${method.returnType} ${method.name}(${method.arguments.stream().map { arg -> "${arg.getType()} ${arg.getName()}" }
+                                        .collect(Collectors.joining(", "))})"
+                        )
+                    }
+        }
     }
 
     fun getContractVariables() {
