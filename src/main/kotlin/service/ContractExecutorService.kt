@@ -21,11 +21,10 @@ class ContractExecutorService(
         private val selectedContractData: SmartContractData
 ) {
     private val thriftPool: ThriftClientPool<ContractExecutor.Client>
-    private val client: ContractExecutor.Client
 
     init {
-        client = ContractExecutor.Client(TBinaryProtocol(TSocket("localhost", 9080)))
-        thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { client }, "localhost", 9080)
+        val client = ContractExecutor.Client(TBinaryProtocol(TSocket("127.0.0.1", 9080).apply { open() }))
+        thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { client }, "127.0.0.1", 9080)
     }
 
     fun executeMethod(args: List<String>) {
@@ -36,6 +35,7 @@ class ContractExecutorService(
         val params = IntStream.range(0, types.size).mapToObj { i ->
             variantDataToVariant(createVariantData(types[i], values[i]))
         }.toList()
+        val client = thriftPool.resource
         with(selectedContractData) {
             client.executeByteCode(
                     System.currentTimeMillis(),
@@ -57,6 +57,7 @@ class ContractExecutorService(
                         }
                     }
         }
+        thriftPool.returnResource(client)
     }
 
     private fun getMethodTypes(methodName: String): List<String> {
