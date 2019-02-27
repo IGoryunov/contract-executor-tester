@@ -27,6 +27,10 @@ public class Contract extends SmartContract {
 		return initiator;
 	}
 	
+	public static class SomeClass{
+		
+	}
+	
 	public int waitFor(long sec) {
         try{
             Thread.sleep(sec * 1000);

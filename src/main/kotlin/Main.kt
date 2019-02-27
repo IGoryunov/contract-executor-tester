@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
             async(threads, 30) {
                 when (method) {
                     "executeByteCode" -> executeMethod(arguments)
-//                    "compileSourceCode" -> compileSourceCode()
+                    "compileSourceCode" -> compileSourceCode()
                     "getContractMethods" -> getContractMethods()
                     "getContractVariables" -> getContractVariables()
                     "executeByteCodeMultiple" -> println("method not support yet")
