@@ -11,8 +11,8 @@ object Options {
     var help: Boolean = false
 
     @Parameter(
-        names = ["-e"],
-        description = "call thrift available methods [executeByteCode, executeByteCodeMultiple getContractMethods, getContractVariables, compileSourceCode]"
+            names = ["-e"],
+            description = "call thrift available methods [executeByteCode, executeByteCodeMultiple getContractMethods, getContractVariables, compileSourceCode]"
     )
     var method: String? = ""
 
@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
             async(threads, 30, this) {
                 when (method) {
                     "executeByteCode" -> executeMethod(arguments)
-                    "compileSourceCode" -> compileSourceCode()
+//                    "compileSourceCode" -> compileSourceCode()
                     "getContractMethods" -> getContractMethods()
                     "getContractVariables" -> getContractVariables()
                     "executeByteCodeMultiple" -> println("method not support yet")

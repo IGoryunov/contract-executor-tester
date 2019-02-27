@@ -1,22 +1,32 @@
 package service
 
-import com.credits.client.executor.service.ContractExecutorThriftApiClient
+import com.credits.client.executor.thrift.generated.ContractExecutor
+import com.credits.client.executor.thrift.generated.SmartContractBinary
 import com.credits.client.node.pojo.SmartContractData
-import com.credits.general.util.GeneralConverter.encodeToBASE58
-import com.credits.general.util.VariantConverter.createVariantObject
-import com.credits.general.util.VariantConverter.objectToVariant
+import com.credits.general.thrift.ThriftClientPool
+import com.credits.general.thrift.ThriftClientPool.ClientFactory
+import com.credits.general.util.ByteArrayContractClassLoader
+import com.credits.general.util.GeneralConverter.byteCodeObjectsDataToByteCodeObjects
+import com.credits.general.util.variant.VariantConverter.variantDataToVariant
+import com.credits.general.util.variant.VariantUtils.createVariantData
+import org.apache.thrift.protocol.TBinaryProtocol
+import org.apache.thrift.transport.TSocket
 import saveContractStateOnDisk
-import writeToFile
-import java.io.File.separator
-import java.util.stream.Collectors
+import java.nio.ByteBuffer
 import java.util.stream.IntStream
 import kotlin.streams.toList
 
 class ContractExecutorService(
-    private val contractsFolder: String,
-    private val selectedContractData: SmartContractData
+        private val contractsFolder: String,
+        private val selectedContractData: SmartContractData
 ) {
-    private val client = ContractExecutorThriftApiClient.getInstance("localhost", 9080)
+    private val thriftPool: ThriftClientPool<ContractExecutor.Client>
+    private val client: ContractExecutor.Client
+
+    init {
+        client = ContractExecutor.Client(TBinaryProtocol(TSocket("localhost", 9080)))
+        thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { client }, "localhost", 9080)
+    }
 
     fun executeMethod(args: List<String>) {
         val methodName = args[0]
@@ -24,32 +34,37 @@ class ContractExecutorService(
         val values: List<String> = args.subList(1, args.size)
 
         val params = IntStream.range(0, types.size).mapToObj { i ->
-            objectToVariant(createVariantObject(types[i], values[i]))
+            variantDataToVariant(createVariantData(types[i], values[i]))
         }.toList()
         with(selectedContractData) {
             client.executeByteCode(
-                address,
-                smartContractDeployData.byteCode,
-                if (objectState != null) objectState else byteArrayOf(),
-                methodName,
-                params,
-                500
+                    System.currentTimeMillis(),
+                    ByteBuffer.wrap(address),
+                    SmartContractBinary(
+                            ByteBuffer.wrap(address),
+                            byteCodeObjectsDataToByteCodeObjects(smartContractDeployData.byteCodeObjects),
+                            ByteBuffer.wrap(if (objectState != null) objectState else byteArrayOf()),
+                            true),
+                    methodName,
+                    params,
+                    500
             )
-                .let { result ->
-                    println("smart contract method execute result: $result")
-                    result.getContractState()?.let { state ->
-                        objectState = state
-                        saveContractStateOnDisk(selectedContractData, contractsFolder)
+                    .let { result ->
+                        println("smart contract method execute result: $result")
+                        result.getInvokedContractState()?.let { state ->
+                            objectState = state
+                            saveContractStateOnDisk(selectedContractData, contractsFolder)
+                        }
                     }
-                }
         }
     }
 
     private fun getMethodTypes(methodName: String): List<String> {
-        val contractClass = ByteArrayClassLoader().buildClass(selectedContractData.smartContractDeployData.byteCode)
+        val byteCodeObjectData = selectedContractData.smartContractDeployData.byteCodeObjects[0]
+        val contractClass = ByteArrayContractClassLoader().buildClass(byteCodeObjectData.name, byteCodeObjectData.byteCode)
         return contractClass.methods.filter { it.name == methodName }[0].parameterTypes
-            .map { parameter -> parameter.name.split(".").last() }
-            .toList()
+                .map { parameter -> parameter.name.split(".").last() }
+                .toList()
     }
 
     fun executeMultipleMethod(args: List<String>) {
@@ -62,51 +77,51 @@ class ContractExecutorService(
 
         } else listOf()
 
+        /*
         //todo add convert to variant
         with(selectedContractData) {
             client.executeByteCodeMultiple(
-                address,
-                smartContractDeployData.byteCode,
-                objectState,
-                methodName,
-                listOf(),
-                500
+                    address,
+                    smartContractDeployData.byteCode,
+                    objectState,
+                    methodName,
+                    listOf(),
+                    500
             ).let { result -> println("smart contract method execute result: $result") }
         }
+        */
     }
 
     fun getContractMethods() {
-        client.getContractMethods(selectedContractData.smartContractDeployData.byteCode).getMethods()
-            ?.forEach { method ->
-                println(
-                    "${method.returnType} ${method.name}(${method.arguments.stream().map { arg -> "${arg.getType()} ${arg.getName()}" }.collect(
-                        Collectors.joining(", ")
-                    )})"
-                )
-            }
+//        byteCodeObjectsDataToByteCodeObjects(client.getContractMethods(selectedContractData.smartContractDeployData.byteCodeObjects)).getMethods()
+//                ?.forEach { method ->
+//                    println(
+//                            "${method.returnType} ${method.name}(${method.arguments.stream().map { arg -> "${arg.getType()} ${arg.getName()}" }.collect(
+//                                    Collectors.joining(", ")
+//                            )})"
+//                    )
+//                }
     }
 
     fun getContractVariables() {
-        with(selectedContractData) {
-            if (objectState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
-            client.getContractVariables(
-                selectedContractData.smartContractDeployData.byteCode,
-                objectState
-            ).getContractVariables()?.forEach {
-                println(it)
-            }
-        }
+//        with(selectedContractData) {
+//            if (objectState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
+//            client.getContractVariables(
+//                    selectedContractData.smartContractDeployData.byteCode,
+//                    objectState
+//            ).getContractVariables()?.forEach {
+//                println(it)
+//            }
+//        }
     }
 
-    fun compileSourceCode(): ByteArray =
-        with(client.compileSourceCode(selectedContractData.smartContractDeployData.sourceCode)) {
-            println(this)
-            writeToFile(
-                "$contractsFolder$separator${encodeToBASE58(selectedContractData.address)}${separator}bytecode.bin",
-                getByteCode()
-            )
-            getByteCode()
-        }
-
-
+//    fun compileSourceCode(): ByteArray =
+//            with(client.compileSourceCode(selectedContractData.smartContractDeployData.sourceCode)) {
+//                println(this)
+//                writeToFile(
+//                        "$contractsFolder$separator${encodeToBASE58(selectedContractData.address)}${separator}bytecode.bin",
+//                        getByteCode()
+//                )
+//                getByteCode()
+//            }
 }
