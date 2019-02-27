@@ -105,15 +105,17 @@ class ContractExecutorService(
     }
 
     fun getContractVariables() {
-//        with(selectedContractData) {
-//            if (objectState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
-//            client.getContractVariables(
-//                    selectedContractData.smartContractDeployData.byteCode,
-//                    objectState
-//            ).getContractVariables()?.forEach {
-//                println(it)
-//            }
-//        }
+        thriftPool.useClient { client ->
+            with(selectedContractData) {
+                if (objectState == null) throw IllegalArgumentException("contractState not found, you have to executeByteCode method previous")
+                client.getContractVariables(
+                        byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects),
+                        ByteBuffer.wrap(objectState)
+                ).getContractVariables()?.forEach {
+                    println(it)
+                }
+            }
+        }
     }
 
     fun compileSourceCode() =
