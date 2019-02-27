@@ -14,7 +14,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
-fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run: () -> Unit) {
+fun async(amountThreads: Int = 10, timeout: Long = 30, run: () -> Unit) {
     if (amountThreads < 0) {
         val executorService = Executors.newFixedThreadPool(100)
         while (true) {
@@ -25,14 +25,17 @@ fun <T : Any> async(amountThreads: Int = 10, timeout: Long = 30, monitor: T, run
     val countDownLatch = CountDownLatch(amountThreads)
     val threads = Array(amountThreads) {
         thread {
-            synchronized(monitor) {
-                run()
-                countDownLatch.countDown()
-            }
+            run()
+            countDownLatch.countDown()
         }
     }
 
-    threads.forEach { if (!it.isAlive) it.start() }
+    threads.forEach {
+        if (!it.isAlive) {
+            Thread.sleep(500)
+            it.start()
+        }
+    }
     countDownLatch.await(timeout, TimeUnit.SECONDS)
 }
 

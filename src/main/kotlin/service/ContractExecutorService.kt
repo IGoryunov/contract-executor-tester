@@ -9,8 +9,6 @@ import com.credits.general.util.ByteArrayContractClassLoader
 import com.credits.general.util.GeneralConverter.byteCodeObjectsDataToByteCodeObjects
 import com.credits.general.util.variant.VariantConverter.variantDataToVariant
 import com.credits.general.util.variant.VariantUtils.createVariantData
-import org.apache.thrift.protocol.TBinaryProtocol
-import org.apache.thrift.transport.TSocket
 import saveContractStateOnDisk
 import java.nio.ByteBuffer
 import java.util.stream.IntStream
@@ -23,8 +21,7 @@ class ContractExecutorService(
     private val thriftPool: ThriftClientPool<ContractExecutor.Client>
 
     init {
-        val client = ContractExecutor.Client(TBinaryProtocol(TSocket("127.0.0.1", 9080).apply { open() }))
-        thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { client }, "127.0.0.1", 9080)
+        thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { tProtocol -> ContractExecutor.Client(tProtocol) }, "127.0.0.1", 9080)
     }
 
     fun executeMethod(args: List<String>) {
@@ -35,8 +32,14 @@ class ContractExecutorService(
         val params = IntStream.range(0, types.size).mapToObj { i ->
             variantDataToVariant(createVariantData(types[i], values[i]))
         }.toList()
-        val client = thriftPool.resource
+        var client: ContractExecutor.Client
+
+        synchronized(ContractExecutorService::class) {
+            client = thriftPool.resource
+        }
+
         with(selectedContractData) {
+            println("executing $methodName...")
             client.executeByteCode(
                     System.currentTimeMillis(),
                     ByteBuffer.wrap(address),
@@ -47,17 +50,22 @@ class ContractExecutorService(
                             true),
                     methodName,
                     params,
-                    500
-            )
-                    .let { result ->
-                        println("smart contract method execute result: $result")
-                        result.getInvokedContractState()?.let { state ->
-                            objectState = state
-                            saveContractStateOnDisk(selectedContractData, contractsFolder)
-                        }
+                    30_000
+            ).let { result ->
+                println("smart contract method execute result: $result")
+                result.getInvokedContractState()?.let { state ->
+                    objectState = state
+
+                    synchronized(ContractExecutorService::class) {
+                        saveContractStateOnDisk(selectedContractData, contractsFolder)
                     }
+                }
+            }
         }
-        thriftPool.returnResource(client)
+
+        synchronized(ContractExecutorService::class) {
+            thriftPool.returnResource(client)
+        }
     }
 
     private fun getMethodTypes(methodName: String): List<String> {

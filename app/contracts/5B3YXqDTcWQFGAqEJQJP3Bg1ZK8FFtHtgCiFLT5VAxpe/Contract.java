@@ -23,6 +23,20 @@ public class Contract extends SmartContract {
         balances.put(owner, new java.math.BigDecimal(1_000_000L).setScale(decimal, java.math.BigDecimal.ROUND_FLOOR));
     }
 
+	public String getInitiator(){
+		return initiator;
+	}
+	
+	public int waitFor(long sec) {
+        try{
+            Thread.sleep(sec * 1000);
+        }
+        catch(InterruptedException x) {
+            return 2;
+        }
+        return 1;
+    }
+	
     public int getDecimal() {
         return decimal;
     }

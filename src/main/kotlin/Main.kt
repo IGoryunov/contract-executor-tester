@@ -48,7 +48,7 @@ fun main(args: Array<String>) {
         val selectedContractData = loadContractsFromDisk(contractsFolder, isDebugInfoEnabled)[contractIndex]
         if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
         with(ContractExecutorService(contractsFolder, selectedContractData)) {
-            async(threads, 30, this) {
+            async(threads, 30) {
                 when (method) {
                     "executeByteCode" -> executeMethod(arguments)
 //                    "compileSourceCode" -> compileSourceCode()
