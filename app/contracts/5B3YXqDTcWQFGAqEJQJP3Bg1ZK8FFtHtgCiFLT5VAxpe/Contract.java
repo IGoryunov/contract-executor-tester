@@ -30,6 +30,10 @@ public class Contract extends SmartContract {
 	public long getAccessId(){
 		return accessId;	
 	}
+
+	public byte[] getSeedTest(){
+        getSeed();
+    }
 	
 	public static class SomeClass{
 		

@@ -1,11 +1,11 @@
 import com.credits.client.node.pojo.SmartContractData
 import com.credits.client.node.pojo.SmartContractDeployData
 import com.credits.client.node.pojo.TokenStandartData.NotAToken
+import com.credits.general.exception.CompilationErrorException
 import com.credits.general.pojo.ByteCodeObjectData
 import com.credits.general.util.GeneralConverter.decodeFromBASE58
 import com.credits.general.util.GeneralConverter.encodeToBASE58
 import com.credits.general.util.compiler.InMemoryCompiler.compileSourceCode
-import compiler.CompilationException
 import java.io.File
 import java.io.File.separator
 import java.io.FileNotFoundException
@@ -42,9 +42,9 @@ fun loadContractsFromDisk(contractsFolderPath: String, debugInfo: Boolean = fals
         val byteCodeObjects = sourcecode?.let {
             try {
                 compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
-            } catch (e: CompilationException) {
+            } catch (e: CompilationErrorException) {
                 println("warning: can't compile contract ${contractFolder.name}")
-                if (debugInfo) println(e.message)
+                if (debugInfo) e.errors.forEach { error -> println("Error on line ${error.lineNumber}: ${error.errorMessage}") }
                 return@let null
             }
         }

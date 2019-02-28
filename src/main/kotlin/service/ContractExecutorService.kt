@@ -29,7 +29,6 @@ class ContractExecutorService(
 
     init {
         thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { tProtocol -> ContractExecutor.Client(tProtocol) }, "127.0.0.1", 9080)
-        println("init")
     }
 
     fun executeMethod(args: List<String>) {
@@ -42,7 +41,11 @@ class ContractExecutorService(
         }.toList()
 
         with(selectedContractData) {
-            accessId.getAndIncrement()
+            synchronized(this@ContractExecutorService) {
+                println("1 $accessId")
+                accessId.getAndIncrement()
+                println("2 $accessId")
+            }
             println("executing $methodName accessId=$accessId...")
             thriftPool.useClient { client ->
                 client.executeByteCode(
