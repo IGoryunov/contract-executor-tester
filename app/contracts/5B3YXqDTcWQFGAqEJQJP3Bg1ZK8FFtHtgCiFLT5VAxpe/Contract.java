@@ -26,6 +26,10 @@ public class Contract extends SmartContract {
 	public String getInitiator(){
 		return initiator;
 	}
+
+	public long getAccessId(){
+		return accessId;	
+	}
 	
 	public static class SomeClass{
 		

@@ -14,6 +14,7 @@ import saveContractStateOnDisk
 import writeToFile
 import java.io.File.separator
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 import kotlin.streams.toList
@@ -23,9 +24,12 @@ class ContractExecutorService(
         private val selectedContractData: SmartContractData
 ) {
     private val thriftPool: ThriftClientPool<ContractExecutor.Client>
+    @Volatile
+    private var accessId = AtomicLong(System.currentTimeMillis())
 
     init {
         thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { tProtocol -> ContractExecutor.Client(tProtocol) }, "127.0.0.1", 9080)
+        println("init")
     }
 
     fun executeMethod(args: List<String>) {
@@ -38,10 +42,11 @@ class ContractExecutorService(
         }.toList()
 
         with(selectedContractData) {
-            println("executing $methodName...")
+            accessId.getAndIncrement()
+            println("executing $methodName accessId=$accessId...")
             thriftPool.useClient { client ->
                 client.executeByteCode(
-                        System.currentTimeMillis(),
+                        accessId.get(),
                         ByteBuffer.wrap(address),
                         SmartContractBinary(
                                 ByteBuffer.wrap(address),
@@ -56,7 +61,7 @@ class ContractExecutorService(
                     result.getInvokedContractState()?.let { state ->
                         objectState = state
 
-                        synchronized(ContractExecutorService::class) {
+                        synchronized(this@ContractExecutorService) {
                             saveContractStateOnDisk(selectedContractData, contractsFolder)
                         }
                     }

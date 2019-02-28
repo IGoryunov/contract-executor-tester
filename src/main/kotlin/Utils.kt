@@ -23,17 +23,10 @@ fun async(amountThreads: Int = 10, timeout: Long = 30, run: () -> Unit) {
         }
     }
     val countDownLatch = CountDownLatch(amountThreads)
-    val threads = Array(amountThreads) {
-        thread {
+    for (i in 1..amountThreads) {
+        thread(start = true) {
             run()
             countDownLatch.countDown()
-        }
-    }
-
-    threads.forEach {
-        if (!it.isAlive) {
-            Thread.sleep(500)
-            it.start()
         }
     }
     countDownLatch.await(timeout, TimeUnit.SECONDS)
