@@ -45,9 +45,7 @@ fun loadContractsFromDisk(contractsFolderPath: String, debugInfo: Boolean = fals
     for (contractFolder in File(contractsFolderPath).listFiles()
             ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
         val address = decodeFromBASE58(contractFolder.name)
-        val sourcecode =
-                contractFolder.walkTopDown().filter { file -> file.nameWithoutExtension == "Contract" }.firstOrNull()
-                        ?.readText()
+        val sourcecode = contractFolder.walkTopDown().filter { file -> file.extension == "java" }.firstOrNull()?.readText()
         val byteCodeObjects = sourcecode?.let {
             try {
                 compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
