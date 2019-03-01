@@ -27,12 +27,16 @@ public class Contract extends SmartContract {
 		return initiator;
 	}
 
+	public String smartCall(String address, String method) {
+		return invokeExternalContract("","", new java.util.ArrayList()).toString();
+	}
+ 
 	public long getAccessId(){
 		return accessId;	
 	}
 
 	public byte[] getSeedTest(){
-        getSeed();
+        return getSeed();
     }
 	
 	public static class SomeClass{

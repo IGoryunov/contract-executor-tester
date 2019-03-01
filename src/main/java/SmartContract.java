@@ -8,9 +8,15 @@ import java.util.List;
 public abstract class SmartContract implements Serializable {
 
     private static final long serialVersionUID = -7544650022718657167L;
-    protected static transient long accessId = 0;
-    protected static transient String initiator;
-    protected static String contractAddress = "";
+    protected final transient long accessId;
+    protected final transient String initiator;
+    protected final String contractAddress;
+
+    public SmartContract() {
+        initiator = null;
+        accessId = 0;
+        contractAddress = null;
+    }
 
     final protected BigDecimal getBalance(String address) {
         return null;
@@ -32,9 +38,15 @@ public abstract class SmartContract implements Serializable {
         return null;
     }
 
-    final protected void sendTransaction(String target, double amount, double fee, byte[] userData) {}
-
-    final protected byte[] getSeed() { return null;}
-
-    final protected Object invokeExternalContract(String externalSmartContractAddress, String externalSmartContractMethod, List externalSmartContractParams){ return null;}
+    final protected void sendTransaction(String target, double amount, double fee, byte[] userData) {
     }
+
+    final protected byte[] getSeed() {
+        return null;
+    }
+
+    final protected Object invokeExternalContract(String externalSmartContractAddress,
+        String externalSmartContractMethod, List externalSmartContractParams) {
+        return null;
+    }
+}
