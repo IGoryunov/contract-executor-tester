@@ -5,6 +5,7 @@ import com.credits.client.executor.thrift.generated.SmartContractBinary
 import com.credits.client.node.pojo.SmartContractData
 import com.credits.general.thrift.ThriftClientPool
 import com.credits.general.thrift.ThriftClientPool.ClientFactory
+import com.credits.general.thrift.generated.Variant
 import com.credits.general.util.ByteArrayContractClassLoader
 import com.credits.general.util.GeneralConverter.byteCodeObjectsDataToByteCodeObjects
 import com.credits.general.util.GeneralConverter.encodeToBASE58
@@ -24,7 +25,7 @@ class ContractExecutorService(
         private val selectedContractData: SmartContractData
 ) {
     private val thriftPool: ThriftClientPool<ContractExecutor.Client>
-    @Volatile
+
     private var accessId = AtomicLong(System.currentTimeMillis())
 
     init {
@@ -32,24 +33,25 @@ class ContractExecutorService(
     }
 
     fun executeMethod(args: List<String>) {
-        val methodName = args[0]
-        val types: List<String> = getMethodTypes(methodName)
-        val values: List<String> = args.subList(1, args.size)
+        var methodName = ""
+        var params = listOf<Variant>()
 
-        val params = IntStream.range(0, types.size).mapToObj { i ->
-            variantDataToVariant(createVariantData(types[i], values[i]))
-        }.toList()
+        if (!args[0].isEmpty()) {
+            methodName = args[0]
+            val types: List<String> = getMethodTypes(methodName)
+            val values: List<String> = args.subList(1, args.size)
+
+            params = IntStream.range(0, types.size).mapToObj { i ->
+                variantDataToVariant(createVariantData(types[i], values[i]))
+            }.toList()
+        }
 
         with(selectedContractData) {
-            synchronized(this@ContractExecutorService) {
-                println("1 $accessId")
-                accessId.getAndIncrement()
-                println("2 $accessId")
-            }
-            println("executing $methodName accessId=$accessId...")
+            //            accessId.getAndIncrement()
+//            println("executing $methodName accessId=$accessId...")
             thriftPool.useClient { client ->
                 client.executeByteCode(
-                        accessId.get(),
+                        accessId.getAndIncrement(),
                         ByteBuffer.wrap(address),
                         SmartContractBinary(
                                 ByteBuffer.wrap(address),

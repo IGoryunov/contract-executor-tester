@@ -15,23 +15,23 @@ internal class ContractExecutorServiceTest {
         service.executeMethod(listOf("register"))
         service.executeMethod(listOf("balanceOf", "5B3YXqDTcWQFGAqEJQJP3Bg1ZK8FFtHtgCiFLT5VAxpe"))
         service.executeMethod(
-            listOf(
-                "transfer",
-                "5B3YXqDTcWQFGAqEJQJP3Bg1ZK8FFtHtgCiFLT5VAxpe",
-                "0"
-            )
+                listOf(
+                        "transfer",
+                        "5B3YXqDTcWQFGAqEJQJP3Bg1ZK8FFtHtgCiFLT5VAxpe",
+                        "0"
+                )
         )
         service.executeMethod(
-            listOf(
-                "transfer",
-                "5B3YXqDTcWQFGAqEJQJP3Bg1ZK8FFtHtgCiFLT5VAxpe",
-                "100"
-            )
+                listOf(
+                        "transfer",
+                        "5B3YXqDTcWQFGAqEJQJP3Bg1ZK8FFtHtgCiFLT5VAxpe",
+                        "100"
+                )
         )
     }
 
     @Test
-    fun executeMethodWithIntParams(){
+    fun executeMethodWithIntParams() {
         service = ContractExecutorService(contractFolder, smartContracts[1])
         service.executeMethod(listOf("openSocket", "5000"))
     }
