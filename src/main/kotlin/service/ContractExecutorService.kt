@@ -154,9 +154,10 @@ class ContractExecutorService(
     }
 
     private fun getMethodTypes(methodName: String): List<String> {
-        val byteCodeObjectData = selectedContractData.smartContractDeployData.byteCodeObjects.last()
-        val contractClass = ByteArrayContractClassLoader().buildClass(byteCodeObjectData.name, byteCodeObjectData.byteCode)
-        return contractClass.methods.filter { it.name == methodName }[0].parameterTypes
+        val byteCodeObjectData = selectedContractData.smartContractDeployData.byteCodeObjects
+        val classLoader = ByteArrayContractClassLoader()
+        val objects = byteCodeObjectData.map { classLoader.buildClass(it.name, it.byteCode) }.toCollection(ArrayList())
+        return objects.last().methods.filter { it.name == methodName }[0].parameterTypes
                 .map { parameter -> parameter.name.split(".").last() }
                 .toList()
     }
