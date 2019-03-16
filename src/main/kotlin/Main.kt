@@ -1,6 +1,7 @@
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import service.ContractExecutorService
+import service.emulation.NodeServer
 import java.io.File.separator
 import java.nio.file.Paths
 
@@ -34,6 +35,11 @@ object Options {
     @Parameter(names = ["-d"], description = "enable debug info")
     var isDebugInfoEnabled: Boolean = false
 
+    @Parameter(names = ["-sp"], description = "node api emulation server port")
+    var nodeServerPort = 0
+
+    @Parameter(names = ["-ec"], description = "emulation server contracts folder path")
+    var serverContractsFolder: String = currentDirectory + separator + "emulationServerContracts" + separator
 }
 
 fun main(args: Array<String>) {
@@ -45,7 +51,12 @@ fun main(args: Array<String>) {
     }
 
     Options.apply {
-        val selectedContractData = loadContractsFromDisk(contractsFolder, isDebugInfoEnabled)[contractIndex]
+        if (nodeServerPort != 0) {
+            NodeServer(nodeServerPort, serverContractsFolder).start()
+            println("server stopped")
+            return
+        }
+        val selectedContractData = loadAllContractsInFolder(contractsFolder, isDebugInfoEnabled)[contractIndex]
         if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
         with(ContractExecutorService(contractsFolder, selectedContractData)) {
             async(threads, 30) {

@@ -33,38 +33,40 @@ fun async(amountThreads: Int = 10, timeout: Long = 30, run: () -> Unit) {
 }
 
 
-fun loadContractsFromDisk(contractsFolderPath: String, debugInfo: Boolean = false): List<SmartContractData> {
+fun loadAllContractsInFolder(contractsFolderPath: String, debugInfo: Boolean = false): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
             ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
-        val address = decodeFromBASE58(contractFolder.name)
-        val sourcecode = contractFolder.walkTopDown().filter { file -> file.extension == "java" }.firstOrNull()?.readText()
-        val byteCodeObjects = sourcecode?.let {
-            try {
-                compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
-            } catch (e: CompilationErrorException) {
-                println("warning: can't compile contract ${contractFolder.name}")
-                if (debugInfo) e.errors.forEach { error -> println("Error on line ${error.lineNumber}: ${error.errorMessage}") }
-                return@let null
-            }
-        }
-        var state: ByteArray? = null
-        File(contractFolder.absolutePath + separator + "state.bin").let {
-            if (it.exists()) {
-                state = readFromFile(it.absolutePath)
-                if (debugInfo) println("state for contract ${contractFolder.name} loaded with hash - ${state?.hashCode()}")
-            }
-        }
-        contracts.add(
-                SmartContractData(
-                        address,
-                        byteArrayOf(),
-                        SmartContractDeployData(sourcecode, byteCodeObjects, NotAToken),
-                        state
-                )
-        )
+        contracts.add(loadContractFromDisk(contractFolder.absolutePath, debugInfo))
     }
     return contracts
+}
+
+fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): SmartContractData {
+    val address = decodeFromBASE58(contractFolder.substringAfterLast(separator))
+    val sourcecode = File(contractFolder).walkTopDown().filter { file -> file.extension == "java" }.firstOrNull()?.readText()
+    val byteCodeObjects = sourcecode?.let {
+        try {
+            compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
+        } catch (e: CompilationErrorException) {
+            println("warning: can't compile contract $contractFolder")
+            if (debugInfo) e.errors.forEach { error -> println("Error on line ${error.lineNumber}: ${error.errorMessage}") }
+            return@let null
+        }
+    }
+    var state: ByteArray? = null
+    File(contractFolder + separator + "state.bin").let {
+        if (it.exists()) {
+            state = readFromFile(it.absolutePath)
+            if (debugInfo) println("state for contract $contractFolder loaded with hash - ${state?.hashCode()}")
+        }
+    }
+    return SmartContractData(
+            address,
+            byteArrayOf(),
+            SmartContractDeployData(sourcecode, byteCodeObjects, NotAToken),
+            state
+    )
 }
 
 fun saveContractStateOnDisk(smartContractData: SmartContractData, contractsFolderPath: String) =
