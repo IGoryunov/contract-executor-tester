@@ -43,6 +43,8 @@ fun loadAllContractsInFolder(contractsFolderPath: String, debugInfo: Boolean = f
 }
 
 fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): SmartContractData {
+    if (!File(contractFolder).exists()) throw FileNotFoundException("contract folder not found $contractFolder")
+
     val address = decodeFromBASE58(contractFolder.substringAfterLast(separator))
     val sourcecode = File(contractFolder).walkTopDown().filter { file -> file.extension == "java" }.firstOrNull()?.readText()
     val byteCodeObjects = sourcecode?.let {
