@@ -1,8 +1,5 @@
-import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -26,24 +23,15 @@ public class SmartContractTesting extends SmartContract {
     }
 
     public int getTotal() {
+        System.out.println("total = " + total);
         return total;
     }
 
     public void createFile() throws Exception {
-        try {
-            Files.createFile(Paths.get(new URI("file:///./some.file")));
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-        }
+        Files.createFile(Paths.get(new URI("file:///./some.file")));
     }
 
-    public void createFileInProjectDir(String path) throws Exception {
-        File file = new File(path);
-        file.getParentFile().mkdirs();
-        Files.createFile(Paths.get(file.getPath()));
-    }
-
-    public void addTokens(Integer amount) {
+    public void addTotal(Integer amount) {
         total += amount;
         System.out.println(java.lang.Integer.toString(amount) + " tokens were added to total");
     }
@@ -55,6 +43,22 @@ public class SmartContractTesting extends SmartContract {
     @Contract(address = "FTWo7QNzweb7JMNL1kuFC32pdkTeQ716mhKThbzXQ9wK", method = "addTokens")
     public void externalCallChangeState(@ContractAddress(id = 0) String address, @ContractMethod(id = 0) String method, Integer value) {
         invokeExternalContract(address, method, value);
+    }
+
+    public void recursionExternalContractGetterCall(int count) {
+        System.out.println("count = " + count);
+        if (count-- > 0) {
+            invokeExternalContract(contractAddress, "recursionExternalContractCall", count);
+        }
+    }
+
+    public int recursionExternalContractSetterCall(int count) {
+        System.out.println("count = " + count);
+        if (count-- > 0) {
+            addTotal(count);
+            return (int) invokeExternalContract(contractAddress, "invokeExternalContractSetterCall", count);
+        }
+        return getTotal();
     }
 
     public void openSocketOnNewThread() {
@@ -87,15 +91,7 @@ public class SmartContractTesting extends SmartContract {
         thread.start();
     }
 
-    public void killProcess() {
-        System.exit(-1);
-    }
-
-    public void killThread() {
-        Thread.currentThread().stop();
-    }
-
-    public void newThread() {
+    public void createSocketOnNewThreadUseLambda() {
         new Thread(() -> {
             try {
                 openSocket(5555);
@@ -104,6 +100,14 @@ public class SmartContractTesting extends SmartContract {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    public void killProcess() {
+        System.exit(-1);
+    }
+
+    public void killThread() {
+        Thread.currentThread().stop();
     }
 }
 

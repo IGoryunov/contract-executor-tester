@@ -22,7 +22,7 @@ import kotlin.streams.toList
 
 class ContractExecutorService(
         private val contractsFolder: String,
-        private val selectedContractData: SmartContractData
+        var selectedContractData: SmartContractData
 ) {
     private val thriftPool: ThriftClientPool<ContractExecutor.Client>
 
@@ -36,7 +36,7 @@ class ContractExecutorService(
         var methodName = ""
         var params = listOf<Variant>()
 
-        if (!args[0].isEmpty()) {
+        if (!args.isEmpty() && !args[0].isEmpty()) {
             methodName = args[0]
             val types: List<String> = getMethodTypes(methodName)
             val values: List<String> = args.subList(1, args.size)
@@ -47,8 +47,6 @@ class ContractExecutorService(
         }
 
         with(selectedContractData) {
-            //            accessId.getAndIncrement()
-//            println("executing $methodName accessId=$accessId...")
             thriftPool.useClient { client ->
                 client.executeByteCode(
                         accessId.getAndIncrement(),
@@ -60,7 +58,7 @@ class ContractExecutorService(
                                 true),
                         methodName,
                         params,
-                        30_000
+                        Long.MAX_VALUE
                 ).let { result ->
                     println("smart contract method execute result: $result")
                     result.getInvokedContractState()?.let { state ->
@@ -157,7 +155,10 @@ class ContractExecutorService(
         val byteCodeObjectData = selectedContractData.smartContractDeployData.byteCodeObjects
         val classLoader = ByteArrayContractClassLoader()
         val objects = byteCodeObjectData.map { classLoader.buildClass(it.name, it.byteCode) }.toCollection(ArrayList())
-        return objects.last().methods.filter { it.name == methodName }[0].parameterTypes
+        return objects.last().methods
+                .filter { it.name == methodName }
+                .also { if (it.isEmpty()) throw java.lang.IllegalArgumentException("the class \"${objects.last()}\" does not contain method \"$methodName\"") }[0]
+                .parameterTypes
                 .map { parameter -> parameter.name.split(".").last() }
                 .toList()
     }
