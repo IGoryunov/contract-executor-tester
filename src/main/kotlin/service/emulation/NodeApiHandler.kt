@@ -1,6 +1,9 @@
 package service.emulation
 
-import com.credits.client.executor.thrift.generated.apiexec.*
+import com.credits.client.executor.thrift.generated.apiexec.APIEXEC
+import com.credits.client.executor.thrift.generated.apiexec.GetSeedResult
+import com.credits.client.executor.thrift.generated.apiexec.SendTransactionResult
+import com.credits.client.executor.thrift.generated.apiexec.SmartContractGetResult
 import com.credits.client.node.thrift.generated.Transaction
 import com.credits.client.node.thrift.generated.WalletIdGetResult
 import com.credits.general.pojo.ApiResponseCode
@@ -15,14 +18,14 @@ import java.nio.ByteBuffer
 import kotlin.random.Random
 
 internal class NodeApiHandler(private val contractsFolder: String) : APIEXEC.Iface {
-    private val successResponse = APIResponse(SUCCESS.code.toByte(), "success")
-    private val notImplementedResponse = APIResponse(NOT_IMPLEMENTED.code.toByte(), "this method is not implemented")
+    private val successResponse = APIResponse(SUCCESS.code, "success")
+    private val notImplementedResponse = APIResponse(NOT_IMPLEMENTED.code, "this method is not implemented")
 
-    override fun SendTransaction(transaction: Transaction?) =
+    override fun SendTransaction(accessId: Long, transaction: Transaction?): SendTransactionResult? =
             SendTransactionResult(successResponse).also { println(it) }
 
 
-    override fun WalletIdGet(address: ByteBuffer?) =
+    override fun WalletIdGet(accessId: Long, address: ByteBuffer?): WalletIdGetResult? =
             WalletIdGetResult(successResponse, 23).also { println(it) }
 
 
@@ -41,10 +44,6 @@ internal class NodeApiHandler(private val contractsFolder: String) : APIEXEC.Ifa
             } catch (e: Throwable) {
                 SmartContractGetResult(APIResponse(ApiResponseCode.FAILURE.code.toByte(), e.message), null, null, false)
             }.also { println(it) }
-
-
-    override fun GetSmartCode(accessId: Long, address: ByteBuffer?) =
-            GetSmartCodeResult(notImplementedResponse, null, null).also { println(it) }
 
 }
 

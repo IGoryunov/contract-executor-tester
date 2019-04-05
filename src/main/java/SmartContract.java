@@ -2,8 +2,6 @@ import java.io.Serializable;
 
 public abstract class SmartContract implements Serializable {
 
-    private static final long serialVersionUID = -7544650022718657167L;
-
     protected final transient long accessId;
     protected final transient String initiator;
     protected final String contractAddress;
@@ -24,5 +22,4 @@ public abstract class SmartContract implements Serializable {
     final protected byte[] getSeed() {
         return null;
     }
-
 }

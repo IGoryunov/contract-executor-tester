@@ -20,6 +20,7 @@ object Options {
     @Parameter(names = ["-t"], description = "amount threads")
     var threads: Int = 1
 
+
     @Parameter(names = ["-a"], description = "argument of method")
     var arguments: MutableList<String> = mutableListOf("")
 
