@@ -1,8 +1,9 @@
+import com.credits.scapi.v0.SmartContract;
+
 import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.credits.scapi.v0.SmartContract;
 
 public class SmartContractTesting extends SmartContract {
 

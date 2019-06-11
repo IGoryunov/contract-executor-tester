@@ -1,3 +1,5 @@
+import com.credits.scapi.v0.SmartContract;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,7 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.credits.scapi.v0.SmartContract;
 
 public class TestClient extends SmartContract {
  private Socket clientSocket;

@@ -1,8 +1,8 @@
+import com.credits.scapi.v0.SmartContract;
+
 import java.io.Serializable;
-import java.util.Arrays;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-import com.credits.scapi.v0.SmartContract;
 
 public class MySmartContract extends SmartContract {
 
