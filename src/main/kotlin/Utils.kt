@@ -1,10 +1,10 @@
 import com.credits.client.node.pojo.SmartContractData
 import com.credits.client.node.pojo.SmartContractDeployData
 import com.credits.client.node.pojo.TokenStandartData.NotAToken
-import com.credits.general.exception.CompilationErrorException
 import com.credits.general.pojo.ByteCodeObjectData
 import com.credits.general.util.GeneralConverter.decodeFromBASE58
 import com.credits.general.util.GeneralConverter.encodeToBASE58
+import com.credits.general.util.compiler.CompilationException
 import com.credits.general.util.compiler.InMemoryCompiler.compileSourceCode
 import java.io.File
 import java.io.File.separator
@@ -42,6 +42,10 @@ fun loadAllContractsInFolder(contractsFolderPath: String, debugInfo: Boolean = f
     return contracts
 }
 
+fun filterContractByFolderName(folderName: String, loadAllContractsInFolder: List<SmartContractData>): SmartContractData? =
+        loadAllContractsInFolder.firstOrNull { smartContractData -> encodeToBASE58(smartContractData.address).startsWith(folderName) }
+
+
 fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): SmartContractData {
     if (!File(contractFolder).exists()) throw FileNotFoundException("contract folder not found $contractFolder")
 
@@ -50,7 +54,7 @@ fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): Sm
     val byteCodeObjects = sourcecode?.let {
         try {
             compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
-        } catch (e: CompilationErrorException) {
+        } catch (e: CompilationException) {
             println("warning: can't compile contract $contractFolder")
             if (debugInfo) e.errors.forEach { error -> println("Error on line ${error.lineNumber}: ${error.errorMessage}") }
             return@let null
@@ -67,7 +71,8 @@ fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): Sm
             address,
             byteArrayOf(),
             SmartContractDeployData(sourcecode, byteCodeObjects, NotAToken),
-            state
+            state,
+            1
     )
 }
 

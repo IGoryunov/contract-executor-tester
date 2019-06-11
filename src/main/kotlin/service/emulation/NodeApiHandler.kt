@@ -5,11 +5,13 @@ import com.credits.client.executor.thrift.generated.apiexec.GetSeedResult
 import com.credits.client.executor.thrift.generated.apiexec.SendTransactionResult
 import com.credits.client.executor.thrift.generated.apiexec.SmartContractGetResult
 import com.credits.client.node.thrift.generated.Transaction
+import com.credits.client.node.thrift.generated.WalletBalanceGetResult
 import com.credits.client.node.thrift.generated.WalletIdGetResult
 import com.credits.general.pojo.ApiResponseCode
 import com.credits.general.pojo.ApiResponseCode.NOT_IMPLEMENTED
 import com.credits.general.pojo.ApiResponseCode.SUCCESS
 import com.credits.general.thrift.generated.APIResponse
+import com.credits.general.thrift.generated.Amount
 import com.credits.general.util.GeneralConverter.byteCodeObjectsDataToByteCodeObjects
 import com.credits.general.util.GeneralConverter.encodeToBASE58
 import loadContractFromDisk
@@ -18,6 +20,11 @@ import java.nio.ByteBuffer
 import kotlin.random.Random
 
 internal class NodeApiHandler(private val contractsFolder: String) : APIEXEC.Iface {
+
+    override fun WalletBalanceGet(address: ByteBuffer?): WalletBalanceGetResult =
+            WalletBalanceGetResult(successResponse, Amount(100, 1))
+
+
     private val successResponse = APIResponse(SUCCESS.code, "success")
     private val notImplementedResponse = APIResponse(NOT_IMPLEMENTED.code, "this method is not implemented")
 

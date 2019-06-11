@@ -1,13 +1,14 @@
 package service
 
+import com.credits.classload.ByteCodeContractClassLoader
 import com.credits.client.executor.thrift.generated.ContractExecutor
+import com.credits.client.executor.thrift.generated.MethodHeader
 import com.credits.client.executor.thrift.generated.SmartContractBinary
 import com.credits.client.node.pojo.SmartContractData
 import com.credits.general.thrift.ThriftClientPool
 import com.credits.general.thrift.ThriftClientPool.ClientFactory
 import com.credits.general.thrift.generated.ClassObject
 import com.credits.general.thrift.generated.Variant
-import com.credits.general.util.ByteArrayContractClassLoader
 import com.credits.general.util.GeneralConverter.*
 import com.credits.general.util.variant.VariantConverter.toVariant
 import saveContractStateOnDisk
@@ -57,14 +58,13 @@ class ContractExecutorService(
                                         ByteBuffer.wrap(if (objectState != null) objectState else byteArrayOf())),
 
                                 true),
-                        methodName,
-                        params,
+                        listOf(MethodHeader(methodName, params)),
                         Long.MAX_VALUE,
-                        0.toByte()
+                        1.toShort()
                 ).let { result ->
                     println("smart contract method execute result: $result")
-                    result.getInvokedContractState()?.let { state ->
-                        objectState = state
+                    result.getResults()?.get(0)?.invokedContractState?.let { state ->
+                        objectState = state.array()
 
                         synchronized(this@ContractExecutorService) {
                             saveContractStateOnDisk(selectedContractData, contractsFolder)
@@ -103,7 +103,7 @@ class ContractExecutorService(
 
     fun getContractMethods() {
         thriftPool.useClient { client ->
-            client.getContractMethods(byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects), 0.toByte())
+            client.getContractMethods(byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects), 0)
                     .getMethods()
                     ?.forEach { method ->
                         println(
@@ -121,7 +121,7 @@ class ContractExecutorService(
                 client.getContractVariables(
                         byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects),
                         ByteBuffer.wrap(objectState),
-                        0.toByte()
+                        0
                 ).getContractVariables()?.forEach {
                     println(it)
                 }
@@ -131,7 +131,7 @@ class ContractExecutorService(
 
     fun compileSourceCode() =
             thriftPool.useClient { client ->
-                with(client.compileSourceCode(selectedContractData.smartContractDeployData.sourceCode, 0.toByte())) {
+                with(client.compileSourceCode(selectedContractData.smartContractDeployData.sourceCode, 0)) {
 
                     println(this)
                     getByteCodeObjects().apply {
@@ -155,11 +155,11 @@ class ContractExecutorService(
         }
     }
 
-    val classLoader = ByteArrayContractClassLoader() //todo change to ByteCodeContractClassloader
+    private val classLoader = ByteCodeContractClassLoader()
 
     private fun getMethodTypes(methodName: String): List<Class<*>> {
         val byteCodeObjectData = selectedContractData.smartContractDeployData.byteCodeObjects
-        val objects = byteCodeObjectData.map { classLoader.buildClass(it.name, it.byteCode) }.toCollection(ArrayList())
+        val objects = byteCodeObjectData.map { classLoader.loadClass(it.name, it.byteCode) }.toCollection(ArrayList())
         return objects.last().methods
                 .filter { it.name == methodName }
                 .also { if (it.isEmpty()) throw IllegalArgumentException("the class \"${objects.last()}\" does not contain method \"$methodName\"") }[0]

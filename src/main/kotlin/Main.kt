@@ -27,8 +27,8 @@ object Options {
     @Parameter(names = ["-p"], description = "contracts folder path")
     var contractsFolder: String = currentDirectory + separator + "contracts" + separator
 
-    @Parameter(names = ["-i"], description = "index of current contract into \"contracts\" folder")
-    var contractIndex: Int = 0
+    @Parameter(names = ["-f"], description = "select contract folder")
+    var contractFolder: String = ""
 
     @Parameter(names = ["-s"], description = "show selected contract sourcecode")
     var isShowContractSourceCode: Boolean = false
@@ -60,17 +60,18 @@ fun main(args: Array<String>) {
             println("server stopped")
             return
         }
-        val selectedContractData = loadAllContractsInFolder(contractsFolder, isDebugInfoEnabled)[contractIndex]
-        if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
-        with(ContractExecutorService(contractsFolder, selectedContractData)) {
-            async(threads, 30) {
-                when (method) {
-                    "executeByteCode" -> executeMethod(arguments)
-                    "compileSourceCode" -> compileSourceCode()
-                    "getContractMethods" -> getContractMethods()
-                    "getContractVariables" -> getContractVariables()
-                    "executeByteCodeMultiple" -> println("method not support yet")
-                    else -> print("unknown method")
+        filterContractByFolderName(contractFolder, loadAllContractsInFolder(contractsFolder, isDebugInfoEnabled))?.let { selectedContractData ->
+            if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
+            with(ContractExecutorService(contractsFolder, selectedContractData)) {
+                async(threads, 30) {
+                    when (method) {
+                        "executeByteCode" -> executeMethod(arguments)
+                        "compileSourceCode" -> compileSourceCode()
+                        "getContractMethods" -> getContractMethods()
+                        "getContractVariables" -> getContractVariables()
+                        "executeByteCodeMultiple" -> println("method not support yet")
+                        else -> print("unknown method")
+                    }
                 }
             }
         }
