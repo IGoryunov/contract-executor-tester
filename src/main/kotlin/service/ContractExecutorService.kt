@@ -1,5 +1,6 @@
 package service
 
+import Options
 import com.credits.classload.ByteCodeContractClassLoader
 import com.credits.client.executor.thrift.generated.ContractExecutor
 import com.credits.client.executor.thrift.generated.MethodHeader
@@ -60,7 +61,7 @@ class ContractExecutorService(
                                 true),
                         listOf(MethodHeader(methodName, params)),
                         Long.MAX_VALUE,
-                        1.toShort()
+                        Options.apiVersion.toShort()
                 ).let { result ->
                     println("smart contract method execute result: $result")
                     result.getResults()?.get(0)?.invokedContractState?.let { state ->
@@ -103,7 +104,7 @@ class ContractExecutorService(
 
     fun getContractMethods() {
         thriftPool.useClient { client ->
-            client.getContractMethods(byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects), 0)
+            client.getContractMethods(byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects), Options.apiVersion.toShort())
                     .getMethods()
                     ?.forEach { method ->
                         println(
@@ -121,7 +122,7 @@ class ContractExecutorService(
                 client.getContractVariables(
                         byteCodeObjectsDataToByteCodeObjects(selectedContractData.smartContractDeployData.byteCodeObjects),
                         ByteBuffer.wrap(objectState),
-                        0
+                        Options.apiVersion.toShort()
                 ).getContractVariables()?.forEach {
                     println(it)
                 }
@@ -131,7 +132,7 @@ class ContractExecutorService(
 
     fun compileSourceCode() =
             thriftPool.useClient { client ->
-                with(client.compileSourceCode(selectedContractData.smartContractDeployData.sourceCode, 0)) {
+                with(client.compileSourceCode(selectedContractData.smartContractDeployData.sourceCode, Options.apiVersion.toShort())) {
 
                     println(this)
                     getByteCodeObjects().apply {

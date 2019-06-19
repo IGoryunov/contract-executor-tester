@@ -41,6 +41,9 @@ object Options {
 
     @Parameter(names = ["-sp"], description = "emulation server contracts folder path")
     var serverContractsFolder: String = currentDirectory + separator + "emulationServerContracts" + separator
+
+    @Parameter(names = ["-v"], description = "set api version")
+    var apiVersion: Int = 1
 }
 
 fun main(args: Array<String>) {
