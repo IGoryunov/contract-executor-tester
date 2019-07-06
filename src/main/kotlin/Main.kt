@@ -44,6 +44,9 @@ object Options {
 
     @Parameter(names = ["-v"], description = "set api version")
     var apiVersion: Int = 1
+
+    @Parameter(names = ["-b"], description = "use compiled bytecode files instead compilation")
+    var loadByteCode: Boolean = false
 }
 
 fun main(args: Array<String>) {
@@ -63,7 +66,7 @@ fun main(args: Array<String>) {
             println("server stopped")
             return
         }
-        filterContractByFolderName(contractFolder, loadAllContractsInFolder(contractsFolder, isDebugInfoEnabled))?.let { selectedContractData ->
+        filterContractByFolderName(contractFolder, loadAllContractsInFolder(contractsFolder, isDebugInfoEnabled, loadByteCode))?.let { selectedContractData ->
             if (isShowContractSourceCode) println(selectedContractData.smartContractDeployData.sourceCode)
             with(ContractExecutorService(contractsFolder, selectedContractData)) {
                 async(threads, 30) {

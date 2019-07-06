@@ -33,35 +33,39 @@ fun async(amountThreads: Int = 10, timeout: Long = 30, run: () -> Unit) {
 }
 
 
-fun loadAllContractsInFolder(contractsFolderPath: String, debugInfo: Boolean = false): List<SmartContractData> {
+fun loadAllContractsInFolder(contractsFolderPath: String, debugInfo: Boolean = false, loadByteCode: Boolean = false): List<SmartContractData> {
     val contracts = mutableListOf<SmartContractData>()
     for (contractFolder in File(contractsFolderPath).listFiles()
             ?: throw FileNotFoundException("Contracts folder \"$contractsFolderPath\" not found")) {
-        contracts.add(loadContractFromDisk(contractFolder.absolutePath, debugInfo))
+        contracts.add(loadContractFromDisk(contractFolder.absolutePath, debugInfo, loadByteCode))
     }
     return contracts
 }
 
-fun filterContractByFolderName(folderName: String, loadAllContractsInFolder: List<SmartContractData>): SmartContractData? =
-        loadAllContractsInFolder.firstOrNull { smartContractData -> encodeToBASE58(smartContractData.address).startsWith(folderName) }
+fun filterContractByFolderName(folderName: String, contracts: List<SmartContractData>): SmartContractData? =
+        contracts.firstOrNull { smartContractData -> encodeToBASE58(smartContractData.address).startsWith(folderName) }
 
 
-fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): SmartContractData {
+fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false, loadByteCode: Boolean = false): SmartContractData {
     if (!File(contractFolder).exists()) throw FileNotFoundException("contract folder not found $contractFolder")
 
     val address = decodeFromBASE58(contractFolder.substringAfterLast(separator))
     val sourcecode = File(contractFolder).walkTopDown().filter { file -> file.extension == "java" }.firstOrNull()?.readText()
-    val byteCodeObjects = sourcecode?.let {
-        try {
-            compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
-        } catch (e: CompilationException) {
-            println("warning: can't compile contract $contractFolder")
-            if (debugInfo) e.errors.forEach { error -> println("Error on line ${error.lineNumber}: ${error.errorMessage}") }
-            return@let null
+    val byteCodeObjects = if (loadByteCode) {
+        loadByteCodeObjectDataFromFolder(contractFolder)
+    } else {
+        sourcecode?.let {
+            try {
+                compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
+            } catch (e: CompilationException) {
+                println("warning: can't compile contract $contractFolder")
+                if (debugInfo) println(e.message)
+                return@let null
+            }
         }
     }
     var state: ByteArray? = null
-    File(contractFolder + separator + "state.bin").let {
+    File(contractFolder + separator + "object.state").let {
         if (it.exists()) {
             state = readFromFile(it.absolutePath)
             if (debugInfo) println("state for contract $contractFolder loaded with hash - ${state?.hashCode()}")
@@ -76,9 +80,19 @@ fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false): Sm
     )
 }
 
+private fun loadByteCodeObjectDataFromFolder(contractFolder: String): List<ByteCodeObjectData> {
+    return File(contractFolder).walkTopDown()
+            .filter { file -> file.extension == "bin" }
+            .map { file ->
+                ByteCodeObjectData(file.nameWithoutExtension, file.readBytes())
+                        .also { println("load bytecode from disk: ${it.name} ${it.byteCode.size} bytes") }
+            }
+            .toList()
+}
+
 fun saveContractStateOnDisk(smartContractData: SmartContractData, contractsFolderPath: String) =
         with(smartContractData) {
-            writeToFile("$contractsFolderPath$separator${encodeToBASE58(address)}${separator}state.bin", objectState)
+            writeToFile("$contractsFolderPath$separator${encodeToBASE58(address)}${separator}object.state", objectState)
         }
 
 fun writeToFile(fileName: String, bytes: ByteArray) =
