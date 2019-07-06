@@ -30,14 +30,14 @@ class ContractExecutorService(
     private var accessId = AtomicLong(System.currentTimeMillis())
 
     init {
-        thriftPool = ThriftClientPool<ContractExecutor.Client>(ClientFactory { tProtocol -> ContractExecutor.Client(tProtocol) }, "127.0.0.1", 9080)
+        thriftPool = ThriftClientPool(ClientFactory { tProtocol -> ContractExecutor.Client(tProtocol) }, "127.0.0.1", 9080)
     }
 
     fun executeMethod(args: List<String>) {
         var methodName = ""
         var params = listOf<Variant>()
 
-        if (!args.isEmpty() && !args[0].isEmpty()) {
+        if (args.isNotEmpty() && args[0].isNotEmpty()) {
             methodName = args[0]
             val types: List<Class<*>> = getMethodTypes(methodName)
             val values: List<String> = args.subList(1, args.size)

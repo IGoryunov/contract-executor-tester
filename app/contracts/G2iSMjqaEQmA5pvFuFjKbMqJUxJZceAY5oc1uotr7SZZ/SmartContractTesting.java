@@ -1,4 +1,4 @@
-import com.credits.scapi.v0.SmartContract;
+import com.credits.scapi.v1.SmartContract;
 
 import java.net.ServerSocket;
 import java.net.URI;
