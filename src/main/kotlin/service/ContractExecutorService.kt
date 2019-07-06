@@ -21,10 +21,7 @@ import java.util.stream.Collectors
 import java.util.stream.IntStream
 import kotlin.streams.toList
 
-class ContractExecutorService(
-        private val contractsFolder: String,
-        var selectedContractData: SmartContractData
-) {
+class ContractExecutorService(private val contractsFolder: String, var selectedContractData: SmartContractData) {
     private val thriftPool: ThriftClientPool<ContractExecutor.Client>
 
     private var accessId = AtomicLong(System.currentTimeMillis())

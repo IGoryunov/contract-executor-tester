@@ -50,27 +50,9 @@ fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false, loa
     if (!File(contractFolder).exists()) throw FileNotFoundException("contract folder not found $contractFolder")
 
     val address = decodeFromBASE58(contractFolder.substringAfterLast(separator))
-    val sourcecode = File(contractFolder).walkTopDown().filter { file -> file.extension == "java" }.firstOrNull()?.readText()
-    val byteCodeObjects = if (loadByteCode) {
-        loadByteCodeObjectDataFromFolder(contractFolder)
-    } else {
-        sourcecode?.let {
-            try {
-                compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
-            } catch (e: CompilationException) {
-                println("warning: can't compile contract $contractFolder")
-                if (debugInfo) println(e.message)
-                return@let null
-            }
-        }
-    }
-    var state: ByteArray? = null
-    File(contractFolder + separator + "object.state").let {
-        if (it.exists()) {
-            state = readFromFile(it.absolutePath)
-            if (debugInfo) println("state for contract $contractFolder loaded with hash - ${state?.hashCode()}")
-        }
-    }
+    val sourcecode = loadSourceCodeFromFolder(contractFolder)
+    val byteCodeObjects = loadByteCodeObjectData(loadByteCode, contractFolder, sourcecode, debugInfo)
+    val state: ByteArray? = loadContractStateFromFolder(contractFolder, debugInfo)
     return SmartContractData(
             address,
             byteArrayOf(),
@@ -80,15 +62,48 @@ fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false, loa
     )
 }
 
-private fun loadByteCodeObjectDataFromFolder(contractFolder: String): List<ByteCodeObjectData> {
-    return File(contractFolder).walkTopDown()
-            .filter { file -> file.extension == "bin" }
-            .map { file ->
-                ByteCodeObjectData(file.nameWithoutExtension, file.readBytes())
-                        .also { println("load bytecode from disk: ${it.name} ${it.byteCode.size} bytes") }
-            }
-            .toList()
+private fun loadContractStateFromFolder(contractFolder: String, debugInfo: Boolean): ByteArray? {
+    var state: ByteArray? = null
+    File(contractFolder + separator + "object.state").let {
+        if (it.exists()) {
+            state = readFromFile(it.absolutePath)
+            if (debugInfo) println("state for contract $contractFolder loaded with hash - ${state.hashCode()}")
+        }
+    }
+    return state
 }
+
+private fun loadByteCodeObjectData(loadByteCode: Boolean, contractFolder: String, sourcecode: String?, debugInfo: Boolean): List<ByteCodeObjectData>? =
+        try {
+            if (loadByteCode) loadByteCodeObjectDataFromFolder(contractFolder)
+            else sourcecode?.let { createByteCodeObjectDataFromSourceCode(it) }
+        } catch (e: CompilationException) {
+            println("warning: can't compile contract $contractFolder")
+            if (debugInfo) println(e.message)
+            null
+        }
+
+
+private fun createByteCodeObjectDataFromSourceCode(sourcecode: String?) =
+        compileSourceCode(sourcecode).units.map { ByteCodeObjectData(it.name, it.byteCode) }
+
+private fun loadSourceCodeFromFolder(contractFolder: String) =
+        File(contractFolder)
+                .walkTopDown()
+                .filter { file -> file.extension == "java" }
+                .firstOrNull()
+                ?.readText()
+
+private fun loadByteCodeObjectDataFromFolder(contractFolder: String): List<ByteCodeObjectData> =
+        File(contractFolder)
+                .walkTopDown()
+                .filter { file -> file.extension == "bin" }
+                .map { file ->
+                    ByteCodeObjectData(file.nameWithoutExtension, file.readBytes())
+                            .also { println("load bytecode from disk: ${it.name} ${it.byteCode.size} bytes") }
+                }
+                .toList()
+
 
 fun saveContractStateOnDisk(smartContractData: SmartContractData, contractsFolderPath: String) =
         with(smartContractData) {
