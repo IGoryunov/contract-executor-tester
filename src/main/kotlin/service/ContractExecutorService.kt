@@ -37,7 +37,7 @@ class ContractExecutorService(private val contractsFolder: String, var selectedC
         if (args.isNotEmpty() && args[0].isNotEmpty()) {
             methodName = args[0]
             val types: List<Class<*>> = getMethodTypes(methodName)
-            val values: List<String> = args.subList(1, args.size)
+            val values: List<String> = args.subList(1, args.size).map { it.replace(";", ", ") }
 
             params = IntStream.range(0, types.size).mapToObj { i ->
                 toVariant(types[i].typeName, createObjectFromString(values[i], types[i]))
