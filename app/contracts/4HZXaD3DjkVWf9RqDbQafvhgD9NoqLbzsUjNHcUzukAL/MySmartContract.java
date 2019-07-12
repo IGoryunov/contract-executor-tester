@@ -57,6 +57,11 @@ public class MySmartContract extends SmartContract {
         return getTotal();
     }
 
+    public void createTwoTransactions(){
+        sendTransaction(initiator, contractAddress, 1.0, 10);
+        sendTransaction(initiator, contractAddress, 0.01, 11, "hello".getBytes());
+    }
+
     @Override
     public int hashCode() {
         return super.hashCode()+total;

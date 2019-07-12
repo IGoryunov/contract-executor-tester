@@ -1,18 +1,18 @@
 package service
 
-import loadContractsFromDisk
-import org.junit.Assert
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+//import loadContractsFromDisk
+//import org.junit.Assert
+//import org.junit.jupiter.api.BeforeEach
+//import org.junit.jupiter.api.Test
+//
 
+//internal class ContractExecutorThriftClientIntegrationTest : Assert() {
 
-internal class ContractExecutorThriftClientIntegrationTest : Assert() {
-
-    private val smartContracts = loadContractsFromDisk("src/test/resources/contracts")
+//    private val smartContracts = loadContractsFromDisk("src/test/resources/contracts")
 //    private lateinit var executorClient: ContractExecutorThriftApiClient
 
 
-    @BeforeEach
+//    @BeforeEach
     fun setUp() {
 //        executorClient = ContractExecutorThriftApiClient.getInstance("localhost", 9080)
 //
@@ -28,8 +28,8 @@ internal class ContractExecutorThriftClientIntegrationTest : Assert() {
 //        }, "Integration test unavailable. Reason: $errorMessage")
     }
 
-    @Test
-    fun executeBytecodeTest() {
+//    @Test
+//    fun executeBytecodeTest() {
 //        with(smartContracts[1]) {
 //            executorClient.executeByteCode(
 //                address,
@@ -49,5 +49,5 @@ internal class ContractExecutorThriftClientIntegrationTest : Assert() {
 //
 //            assertEquals(1334, getRet_val().v_i32)
 //        }
-    }
-}
+//    }
+//}

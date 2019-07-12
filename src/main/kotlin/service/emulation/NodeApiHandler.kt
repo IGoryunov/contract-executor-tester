@@ -1,9 +1,6 @@
 package service.emulation
 
-import com.credits.client.executor.thrift.generated.apiexec.APIEXEC
-import com.credits.client.executor.thrift.generated.apiexec.GetSeedResult
-import com.credits.client.executor.thrift.generated.apiexec.SendTransactionResult
-import com.credits.client.executor.thrift.generated.apiexec.SmartContractGetResult
+import com.credits.client.executor.thrift.generated.apiexec.*
 import com.credits.client.node.thrift.generated.Transaction
 import com.credits.client.node.thrift.generated.WalletBalanceGetResult
 import com.credits.client.node.thrift.generated.WalletIdGetResult
@@ -20,17 +17,15 @@ import java.nio.ByteBuffer
 import kotlin.random.Random
 
 internal class NodeApiHandler(private val contractsFolder: String) : APIEXEC.Iface {
+    private val successResponse = APIResponse(SUCCESS.code, "success")
+    private val notImplementedResponse = APIResponse(NOT_IMPLEMENTED.code, "this method is not implemented")
+
 
     override fun WalletBalanceGet(address: ByteBuffer?): WalletBalanceGetResult =
             WalletBalanceGetResult(successResponse, Amount(100, 1))
 
-
-    private val successResponse = APIResponse(SUCCESS.code, "success")
-    private val notImplementedResponse = APIResponse(NOT_IMPLEMENTED.code, "this method is not implemented")
-
     override fun SendTransaction(accessId: Long, transaction: Transaction?): SendTransactionResult? =
             SendTransactionResult(successResponse).also { println(it) }
-
 
     override fun WalletIdGet(accessId: Long, address: ByteBuffer?): WalletIdGetResult? =
             WalletIdGetResult(successResponse, 23).also { println(it) }
@@ -51,6 +46,9 @@ internal class NodeApiHandler(private val contractsFolder: String) : APIEXEC.Ifa
             } catch (e: Throwable) {
                 SmartContractGetResult(APIResponse(ApiResponseCode.FAILURE.code.toByte(), e.message), null, null, false)
             }.also { println(it) }
+
+
+    override fun PoolGet(sequence: Long): PoolGetResult = PoolGetResult(notImplementedResponse, ByteBuffer.allocate(0))
 
 }
 

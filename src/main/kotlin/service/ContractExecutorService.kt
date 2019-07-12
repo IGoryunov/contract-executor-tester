@@ -16,6 +16,7 @@ import saveContractStateOnDisk
 import writeToFile
 import java.io.File.separator
 import java.nio.ByteBuffer
+import java.nio.ByteBuffer.wrap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Collectors
 import java.util.stream.IntStream
@@ -61,8 +62,8 @@ class ContractExecutorService(private val contractsFolder: String, var selectedC
                         Options.apiVersion.toShort()
                 ).let { result ->
                     println("smart contract method execute result: $result")
-                    result.getResults()?.get(0)?.invokedContractState?.let { state ->
-                        objectState = state.array()
+                    result.getResults()?.get(0)?.let { setterMethodResult ->
+                        objectState = setterMethodResult.getContractsState()[wrap(address)]?.array()
 
                         synchronized(this@ContractExecutorService) {
                             saveContractStateOnDisk(selectedContractData, contractsFolder)
