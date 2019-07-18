@@ -1,6 +1,5 @@
 import com.credits.client.node.pojo.SmartContractData
 import com.credits.client.node.pojo.SmartContractDeployData
-import com.credits.client.node.pojo.TokenStandartData.NotAToken
 import com.credits.general.pojo.ByteCodeObjectData
 import com.credits.general.util.GeneralConverter.decodeFromBASE58
 import com.credits.general.util.GeneralConverter.encodeToBASE58
@@ -56,7 +55,7 @@ fun loadContractFromDisk(contractFolder: String, debugInfo: Boolean = false, loa
     return SmartContractData(
             address,
             byteArrayOf(),
-            SmartContractDeployData(sourcecode, byteCodeObjects, NotAToken),
+            SmartContractDeployData(sourcecode, byteCodeObjects, 0),
             state,
             1
     )

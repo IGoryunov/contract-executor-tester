@@ -50,7 +50,7 @@ task copyJarToApp(type: Copy, dependsOn: [jar]) {
 dependencies {
     compile "org.apache.commons:commons-lang3:3.7"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.apache.thrift:libthrift:0.11.0"
+    compile "org.apache.thrift:libthrift:0.12.0"
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
     compile "ch.qos.logback:logback-classic:1.2.3"
     compile "commons-io:commons-io:2.6"
